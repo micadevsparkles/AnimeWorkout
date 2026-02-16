@@ -120,38 +120,78 @@ function updateHeaderAvatar() {
 }
 
 // --- Perfil ---
+// --- Carregar Dados na Tela Minha Conta ---
 function loadProfileData() {
+    // Campos de Texto/Número
     document.getElementById('profile-user-name').innerText = currentUser.user;
+    document.getElementById('edit-user').value = currentUser.user;
+    document.getElementById('edit-pass').value = currentUser.pass || ""; // Garanta que a senha venha no login
     document.getElementById('edit-weight').value = currentUser.weight;
+    document.getElementById('edit-height').value = currentUser.height;
+    document.getElementById('edit-age').value = currentUser.age;
+    
+    // Dropdowns
+    document.getElementById('edit-gender').value = currentUser.gender;
     document.getElementById('edit-goal').value = currentUser.goal;
     
+    // Avatar
     const img = document.getElementById('profile-avatar');
-    img.src = currentUser.icon || "https://via.placeholder.com/100";
+    img.src = currentUser.icon || "https://via.placeholder.com/100?text=User";
 
+    // Recálculo do IMC e Peso Ideal
     const h = parseFloat(currentUser.height);
     const w = parseFloat(currentUser.weight);
-    if(h && w) {
-        const imc = (w / (h*h)).toFixed(2);
+    if(h > 0 && w > 0) {
+        const imc = (w / (h * h)).toFixed(2);
         document.getElementById('imc-display').innerText = imc;
-        const idealMin = 18.5 * (h*h);
-        const idealMax = 24.9 * (h*h);
-        document.getElementById('imc-ideal').innerText = `Peso Ideal: ${idealMin.toFixed(1)}kg - ${idealMax.toFixed(1)}kg`;
+        
+        // Peso ideal baseado em IMC 18.5 e 24.9
+        const idealMin = (18.5 * (h * h)).toFixed(1);
+        const idealMax = (24.9 * (h * h)).toFixed(1);
+        document.getElementById('imc-ideal').innerText = `Peso Ideal para sua altura: ${idealMin}kg - ${idealMax}kg`;
     }
 }
 
+// --- Salvar Alterações no Perfil ---
 async function saveProfileChanges() {
-    const w = document.getElementById('edit-weight').value;
-    const g = document.getElementById('edit-goal').value;
-    currentUser.weight = w;
-    currentUser.goal = g;
-    await fetch(API_URL, {
-        method: 'POST',
-        body: new URLSearchParams({ action: 'updateProfile', user: currentUser.user, weight: w, goal: g })
-    });
-    alert("Dados atualizados!");
-    loadProfileData();
-}
+    const data = {
+        action: 'updateProfile',
+        user: currentUser.user,
+        pass: document.getElementById('edit-pass').value,
+        weight: document.getElementById('edit-weight').value,
+        height: document.getElementById('edit-height').value,
+        age: document.getElementById('edit-age').value,
+        gender: document.getElementById('edit-gender').value,
+        goal: document.getElementById('edit-goal').value
+    };
 
+    // Feedback visual de carregamento
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerText = "Salvando...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            body: new URLSearchParams(data)
+        }).then(r => r.json());
+
+        if(res.status === 'success') {
+            // Atualiza o objeto local para não precisar de novo login
+            currentUser = {...currentUser, ...data};
+            alert("Perfil atualizado com sucesso!");
+            loadProfileData();
+        } else {
+            alert("Erro ao salvar: " + res.message);
+        }
+    } catch (e) {
+        alert("Erro de conexão com o servidor.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 // Avatar Picker
 function openAvatarSelector() {
     const modal = document.getElementById('avatar-modal');
