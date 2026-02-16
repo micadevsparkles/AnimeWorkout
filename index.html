@@ -5,48 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anime Workout</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div id="app">
-        <section id="login-screen" class="active">
+
+    <section id="login-screen" class="screen active">
+        <div class="auth-container">
             <h1>Anime Workout</h1>
-            <div class="card">
-                <input type="text" id="login-user" placeholder="Usuário">
-                <input type="password" id="login-pass" placeholder="Senha">
-                <button onclick="handleLogin()">Login</button>
-                <p>Ainda não tem conta? <span onclick="showScreen('signup-screen')">Crie uma!</span></p>
-            </div>
-        </section>
+            <input type="text" id="login-user" placeholder="Usuário">
+            <input type="password" id="login-pass" placeholder="Senha">
+            <button onclick="handleLogin()">Login</button>
+            <p>Ainda não tem conta? <span onclick="showRegister()">Crie uma!</span></p>
+        </div>
+    </section>
 
-        <section id="main-screen">
-            <header>
-                <h2>Treinos</h2>
-                <div id="user-avatar" class="avatar" onclick="showScreen('profile-screen')"></div>
-            </header>
+    <section id="register-screen" class="screen">
+        <div class="auth-container">
+            <h2>Criar Conta</h2>
+            <input type="text" id="reg-user" placeholder="Usuário (min 4 chars)" onkeyup="checkUsername()">
+            <span id="user-warning"></span>
+            <input type="password" id="reg-pass" placeholder="Senha">
+            <input type="number" id="reg-weight" placeholder="Peso (kg)">
+            <input type="number" id="reg-height" placeholder="Altura (m)">
+            <input type="number" id="reg-age" placeholder="Idade">
+            <select id="reg-gender">
+                <option value="M">Masculino</option>
+                <option value="F">Feminino</option>
+            </select>
+            <select id="reg-goal">
+                <option value="Emagrecer">Emagrecer</option>
+                <option value="Engordar">Engordar</option>
+                <option value="Massa">Aumentar massa muscular</option>
+                <option value="Forca">Aumentar força</option>
+            </select>
+            <button id="btn-create-acc" onclick="handleRegister()" disabled>Criar conta</button>
+            <p onclick="showLogin()" class="back-link">Voltar ao Login</p>
+        </div>
+    </section>
+
+    <header id="app-header" class="hidden">
+        <div class="logo">AnimeWorkout</div>
+        <div class="user-profile-circle" onclick="showMyAccount()">
+            <img id="header-avatar" src="" alt="User">
+            <div id="header-initial">U</div>
+        </div>
+    </header>
+
+    <section id="home-screen" class="screen hidden">
+        <h3>Treinos Padrão</h3>
+        <div id="default-workouts-container" class="scroll-container">
+            </div>
+
+        <div class="section-header">
+            <h3>Meus Treinos</h3>
+            <button class="add-btn" onclick="showCreateWorkout()"><i class="fas fa-plus"></i></button>
+        </div>
+        <div id="my-workouts-container" class="scroll-container">
+            </div>
+    </section>
+
+    <section id="account-screen" class="screen hidden">
+        <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Voltar</div>
+        <div class="profile-header">
+            <div class="avatar-large-container">
+                <img id="profile-avatar" src="" alt="Avatar">
+                <div class="edit-icon" onclick="openAvatarSelector()"><i class="fas fa-pen"></i></div>
+            </div>
+            <h2 id="profile-user-name">Usuario</h2>
+        </div>
+        
+        <div class="stats-card">
+            <h4>Seu IMC</h4>
+            <div id="imc-display">--</div>
+            <p id="imc-ideal">Peso Ideal: -- kg</p>
+        </div>
+
+        <div class="form-edit">
+            <div class="input-group">
+                <label>Peso</label>
+                <input type="number" id="edit-weight">
+            </div>
+            <div class="input-group">
+                <label>Objetivo</label>
+                <select id="edit-goal">
+                    <option value="Emagrecer">Emagrecer</option>
+                    <option value="Engordar">Engordar</option>
+                    <option value="Massa">Massa Muscular</option>
+                    <option value="Forca">Força</option>
+                </select>
+            </div>
+            <button onclick="saveProfileChanges()">Salvar Alterações</button>
+        </div>
+        
+        <div id="avatar-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Escolha um Avatar</h3>
+                <div id="avatar-list" class="grid-avatars"></div>
+                <button onclick="closeAvatarModal()">Cancelar</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="workout-detail-screen" class="screen hidden">
+        <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Voltar</div>
+        <h1 id="detail-title">Nome do Treino</h1>
+        
+        <div class="detail-stats">
+            <span><i class="fas fa-redo"></i> <span id="detail-reps">0</span>x</span>
+            <span><i class="fas fa-clock"></i> <span id="detail-dur">0</span>s</span>
+        </div>
+
+        <button class="start-btn" onclick="startWorkoutSession()">Começar Treino</button>
+
+        <ul id="detail-exercise-list">
+            </ul>
+    </section>
+
+    <section id="create-workout-screen" class="screen hidden">
+        <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Cancelar</div>
+        <h2>Novo Treino</h2>
+        <input type="text" id="new-workout-name" placeholder="Nome do Treino">
+        
+        <div class="row-inputs">
+            <input type="number" id="new-reps" placeholder="Reps">
+            <input type="number" id="new-dur" placeholder="Duração (s)">
+            <input type="number" id="new-rest" placeholder="Descanso (s)">
+        </div>
+
+        <h3>Selecionar Exercícios</h3>
+        <input type="text" id="search-exercise" placeholder="Pesquisar..." onkeyup="filterExercises()">
+        <div id="exercise-selection-list">
+            </div>
+
+        <button class="save-btn" onclick="submitNewWorkout()">Salvar Treino</button>
+    </section>
+
+    <section id="execution-screen" class="screen hidden">
+        <div id="start-countdown" class="overlay">
+            <span id="start-count-number">5</span>
+        </div>
+
+        <div id="end-screen" class="overlay hidden">
+            <h1>Parabéns!</h1>
+            <button onclick="restartWorkout()">Recomeçar</button>
+            <button onclick="exitWorkout()">Sair</button>
+        </div>
+
+        <div class="exec-container">
+            <div class="gif-container">
+                <img id="exec-gif" src="" alt="Exercicio">
+            </div>
+            <h2 id="exec-name">Nome Exercício</h2>
             
-            <div class="section-title">Treinos Padrão</div>
-            <div id="standard-workouts" class="horizontal-scroll"></div>
-
-            <div class="section-title">
-                Meus Treinos 
-                <button class="add-btn" onclick="showScreen('create-workout-screen')">+</button>
+            <div class="exec-info">
+                <span><i class="fas fa-redo"></i> <span id="exec-reps">10</span></span>
             </div>
-            <div id="my-workouts" class="grid"></div>
-        </section>
 
-        <section id="player-screen">
-            <div id="countdown-overlay">5</div>
-            <div id="exercise-content">
-                <h2 id="exec-name">Nome do Treino</h2>
-                <img id="exec-gif" src="" alt="Exercício">
-                <div class="timer-box">
-                    <span id="timer">00:00</span>
-                    <button id="pause-btn">Pausar</button>
-                </div>
-                <div id="next-info">Próximo: ...</div>
-            </div>
-        </section>
-    </div>
+            <div class="timer-display" id="exec-timer">00:30</div>
+            <button id="btn-pause" onclick="togglePause()">Pausar</button>
+        </div>
+
+        <div id="rest-screen" class="overlay hidden">
+            <h2>Descanso</h2>
+            <div class="timer-display" id="rest-timer">00:10</div>
+            <p>Próximo: <span id="next-exercise-name">...</span></p>
+        </div>
+    </section>
+
     <script src="script.js"></script>
 </body>
 </html>
