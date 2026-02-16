@@ -1,71 +1,102 @@
 :root {
-    --bg: #0a0a0a;
-    --card: #1a1a1a;
-    --primary: #003366; /* Azul Escuro */
-    --accent: #0055ff;
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --primary: #0d47a1; /* Azul Escuro Moderno */
+    --accent: #2196f3;
     --text: #ffffff;
+    --text-muted: #b0b0b0;
+    --success: #00c853;
 }
 
-body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    display: flex;
-    justify-content: center;
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+body { background-color: var(--bg-color); color: var(--text); padding-bottom: 20px; }
+
+.hidden { display: none !important; }
+.screen { padding: 20px; min-height: 100vh; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Login e Inputs */
+.auth-container { display: flex; flex-direction: column; gap: 15px; max-width: 400px; margin: 50px auto; text-align: center; }
+input, select {
+    padding: 12px; border-radius: 8px; border: 1px solid #333;
+    background: var(--card-bg); color: white; width: 100%;
 }
-
-#app { width: 100%; max-width: 500px; padding: 20px; }
-
-.avatar {
-    width: 50px; height: 50px;
-    border-radius: 50%;
-    background: var(--primary);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: 2px solid var(--accent);
-}
-
-.avatar img {
-    width: 100%; height: 100%;
-    object-fit: cover; /* Garante o preenchimento circular */
-}
-
-.card {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
 button {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    width: 100%;
-    font-weight: bold;
-    margin-top: 10px;
+    padding: 12px; border-radius: 8px; border: none; font-weight: bold;
+    background: var(--primary); color: white; cursor: pointer; transition: 0.2s;
+}
+button:disabled { background: #555; }
+span { color: var(--accent); cursor: pointer; }
+
+/* Header */
+#app-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 20px; background: var(--card-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.user-profile-circle {
+    width: 40px; height: 40px; border-radius: 50%; background: #333;
+    overflow: hidden; display: flex; justify-content: center; align-items: center; cursor: pointer;
+}
+.user-profile-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Dashboard */
+.scroll-container {
+    display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;
+}
+.workout-card {
+    min-width: 150px; background: var(--card-bg); padding: 15px;
+    border-radius: 10px; border-left: 4px solid var(--primary);
+    cursor: pointer;
+}
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+.add-btn { width: 30px; height: 30px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; }
+
+/* Minha Conta */
+.avatar-large-container {
+    width: 100px; height: 100px; border-radius: 50%; margin: 0 auto;
+    position: relative; background: #333;
+}
+#profile-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.edit-icon {
+    position: absolute; bottom: 0; right: 0; background: var(--primary);
+    width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.profile-header { text-align: center; margin-bottom: 20px; }
+.stats-card { background: var(--card-bg); padding: 15px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+.grid-avatars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.grid-avatars img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid transparent; }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
+.modal-content { background: var(--card-bg); padding: 20px; border-radius: 10px; text-align: center; }
+
+/* Detalhes do Treino */
+.detail-stats { display: flex; justify-content: center; gap: 20px; margin: 10px 0 20px; }
+.detail-stats span { font-size: 0.9em; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+.start-btn { width: 100%; font-size: 1.2em; padding: 15px; margin-bottom: 20px; }
+#detail-exercise-list li {
+    background: var(--card-bg); padding: 10px; margin-bottom: 5px; border-radius: 5px; list-style: none;
 }
 
-.horizontal-scroll {
-    display: flex;
-    overflow-x: auto;
-    gap: 15px;
-    padding-bottom: 10px;
-}
+/* Criar Treino */
+.row-inputs { display: flex; gap: 10px; margin: 10px 0; }
+#exercise-selection-list { max-height: 300px; overflow-y: auto; margin-top: 10px; }
+.select-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid #333; }
 
-#countdown-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 8rem;
-    z-index: 100;
+/* Execução */
+.exec-container { text-align: center; display: flex; flex-direction: column; height: 80vh; justify-content: space-between; }
+.gif-container { width: 100%; height: 300px; background: #000; display: flex; align-items: center; justify-content: center; border-radius: 10px; overflow: hidden; }
+#exec-gif { max-width: 100%; max-height: 100%; }
+.timer-display { font-size: 4em; font-weight: bold; font-family: monospace; color: var(--accent); }
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
+    justify-content: center; align-items: center; z-index: 50;
+}
+#start-count-number { font-size: 6em; font-weight: bold; color: var(--primary); }
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .gif-container { height: 250px; }
+    .timer-display { font-size: 3em; }
 }
