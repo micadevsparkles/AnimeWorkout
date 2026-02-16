@@ -112,15 +112,13 @@
         
         <div class="detail-stats">
             <span><i class="fas fa-redo"></i> <span id="detail-reps">0</span>x</span>
-            <span><i class="fas fa-clock"></i> <span id="detail-dur">0</span>s</span>
+            <span><i class="fas fa-clock"></i> <span id="detail-dur">0</span> min</span>
         </div>
 
         <button class="start-btn" onclick="startWorkoutSession()">Começar Treino</button>
 
-        <ul id="detail-exercise-list">
-            </ul>
+        <ul id="detail-exercise-list"></ul>
     </section>
-
     <section id="create-workout-screen" class="screen hidden">
         <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Cancelar</div>
         <h2>Novo Treino</h2>
@@ -128,18 +126,30 @@
         
         <div class="row-inputs">
             <input type="number" id="new-reps" placeholder="Reps">
-            <input type="number" id="new-dur" placeholder="Duração (s)">
+            <input type="number" id="new-dur" placeholder="Duração (min)">
             <input type="number" id="new-rest" placeholder="Descanso (s)">
         </div>
+        ```
 
-        <h3>Selecionar Exercícios</h3>
-        <input type="text" id="search-exercise" placeholder="Pesquisar..." onkeyup="filterExercises()">
-        <div id="exercise-selection-list">
+**Seção "TELA EXECUÇÃO" (Adicionado botão Pular):**
+```html
+        <div class="exec-container">
+            <div class="gif-container">
+                <img id="exec-gif" src="" alt="Exercicio">
+            </div>
+            <h2 id="exec-name">Nome Exercício</h2>
+            
+            <div class="exec-info">
+                <span><i class="fas fa-redo"></i> <span id="exec-reps">10</span></span>
             </div>
 
-        <button class="save-btn" onclick="submitNewWorkout()">Salvar Treino</button>
-    </section>
-
+            <div class="timer-display" id="exec-timer">00:00</div>
+            
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button id="btn-pause" style="flex: 1;" onclick="togglePause()">Pausar</button>
+                <button id="btn-skip" style="flex: 1; background-color: #444;" onclick="skipExercise()">Pular <i class="fas fa-forward"></i></button>
+            </div>
+        </div>
     <section id="execution-screen" class="screen hidden">
         <div id="start-countdown" class="overlay">
             <span id="start-count-number">5</span>
