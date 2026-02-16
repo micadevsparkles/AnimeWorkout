@@ -5,189 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anime Workout</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-
-    <header id="app-header" class="hidden">
-        <div class="logo">Anime Workout</div>
-        <div class="user-profile-icon" onclick="toggleProfileMenu()">
-            <img id="header-avatar" src="" alt="User">
-            <span id="header-initial" class="hidden">U</span>
-        </div>
-    </header>
-
-    <div class="container">
-        
+    <div id="app">
         <section id="login-screen" class="active">
-            <h1>Login</h1>
-            <input type="text" id="login-user" placeholder="Usuário">
-            <input type="password" id="login-pass" placeholder="Senha">
-            <button onclick="login()">Entrar</button>
-            <p>Ainda não tem conta? <span class="link" onclick="showScreen('signup-screen')">Crie uma!</span></p>
+            <h1>Anime Workout</h1>
+            <div class="card">
+                <input type="text" id="login-user" placeholder="Usuário">
+                <input type="password" id="login-pass" placeholder="Senha">
+                <button onclick="handleLogin()">Login</button>
+                <p>Ainda não tem conta? <span onclick="showScreen('signup-screen')">Crie uma!</span></p>
+            </div>
         </section>
 
-        <section id="signup-screen" class="hidden">
-            <h1>Criar Conta</h1>
-            <input type="text" id="reg-user" placeholder="Usuário (min 4 chars)" oninput="checkUsername()">
-            <span id="user-error" class="error-msg"></span>
-            <input type="password" id="reg-pass" placeholder="Senha">
-            <div class="optional-fields">
-                <input type="number" id="reg-weight" placeholder="Peso (kg)">
-                <input type="number" id="reg-height" placeholder="Altura (cm)">
-                <input type="number" id="reg-age" placeholder="Idade">
-                <select id="reg-gender">
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                </select>
-                <select id="reg-goal">
-                    <option value="Emagrecer">Emagrecer</option>
-                    <option value="Engordar">Engordar</option>
-                    <option value="Massa Muscular">Aumentar massa muscular</option>
-                    <option value="Força">Aumentar força</option>
-                </select>
-            </div>
-            <button id="btn-create-acc" onclick="signup()" disabled>Criar conta</button>
-            <p><span class="link" onclick="showScreen('login-screen')">Voltar ao Login</span></p>
-        </section>
-
-        <section id="dashboard-screen" class="hidden">
-            <h2>Treinos Padrão</h2>
-            <div id="standard-workouts-container" class="scroll-container">
-                </div>
-
-            <div class="section-header">
-                <h2>Meus Treinos</h2>
-                <button class="add-btn" onclick="openCreateWorkout()">+</button>
-            </div>
-            <div id="my-workouts-container" class="scroll-container">
-                </div>
-        </section>
-
-        <section id="profile-screen" class="hidden">
-            <div class="profile-header">
-                <div class="avatar-edit-container">
-                    <img id="profile-avatar" src="" alt="Avatar">
-                    <i class="fas fa-edit edit-icon" onclick="openAvatarSelector()"></i>
-                </div>
-                <h2 id="profile-username">Usuario</h2>
-            </div>
+        <section id="main-screen">
+            <header>
+                <h2>Treinos</h2>
+                <div id="user-avatar" class="avatar" onclick="showScreen('profile-screen')"></div>
+            </header>
             
-            <div class="imc-card">
-                <h3>Seu IMC</h3>
-                <div id="imc-value">--</div>
-                <div id="imc-desc">Calculando...</div>
-            </div>
+            <div class="section-title">Treinos Padrão</div>
+            <div id="standard-workouts" class="horizontal-scroll"></div>
 
-            <div class="form-group">
-                <label>Peso</label> <input type="number" id="edit-weight">
-                <label>Altura</label> <input type="number" id="edit-height">
-                <label>Objetivo</label> 
-                <select id="edit-goal">
-                     <option value="Emagrecer">Emagrecer</option>
-                    <option value="Engordar">Engordar</option>
-                    <option value="Massa Muscular">Hipertrofia</option>
-                    <option value="Força">Força</option>
-                </select>
-                <button onclick="saveProfileChanges()">Salvar Alterações</button>
+            <div class="section-title">
+                Meus Treinos 
+                <button class="add-btn" onclick="showScreen('create-workout-screen')">+</button>
             </div>
-            <button class="back-btn" onclick="showScreen('dashboard-screen')">Voltar</button>
-
-            <div id="avatar-modal" class="hidden">
-                <h3>Escolha um Avatar</h3>
-                <div id="avatar-grid"></div>
-                <button onclick="closeAvatarModal()">Fechar</button>
-            </div>
+            <div id="my-workouts" class="grid"></div>
         </section>
 
-        <section id="create-workout-screen" class="hidden">
-            <h2>Novo Treino</h2>
-            <input type="text" id="new-workout-name" placeholder="Nome do Treino">
-            
-            <div class="workout-params">
-                <input type="number" id="new-rest" placeholder="Descanso (seg)">
-                <input type="number" id="new-reps" placeholder="Repetições">
-                <input type="number" id="new-duration" placeholder="Duração/Ex (seg)">
-            </div>
-
-            <h3>Exercícios</h3>
-            <input type="text" id="exercise-search" placeholder="Pesquisar exercício..." onkeyup="filterExercises()">
-            <div id="exercise-list-selection">
+        <section id="player-screen">
+            <div id="countdown-overlay">5</div>
+            <div id="exercise-content">
+                <h2 id="exec-name">Nome do Treino</h2>
+                <img id="exec-gif" src="" alt="Exercício">
+                <div class="timer-box">
+                    <span id="timer">00:00</span>
+                    <button id="pause-btn">Pausar</button>
                 </div>
-
-            <button onclick="saveNewWorkout()">Salvar Treino</button>
-            <button class="back-btn" onclick="showScreen('dashboard-screen')">Cancelar</button>
-        </section>
-
-        <section id="workout-detail-screen" class="hidden">
-            <h1 id="detail-title">Nome do Treino</h1>
-            <div class="detail-stats">
-                <span><i class="fas fa-sync-alt"></i> <span id="detail-reps">0</span> reps</span>
-                <span><i class="fas fa-clock"></i> <span id="detail-duration">0</span>s</span>
-            </div>
-            <button class="start-btn" onclick="startWorkout()">Começar Treino</button>
-            
-            <ul id="detail-exercise-list">
-                </ul>
-            <button class="back-btn" onclick="showScreen('dashboard-screen')">Voltar</button>
-        </section>
-
-        <section id="execution-screen" class="hidden">
-            <div id="start-countdown-overlay" class="hidden">
-                <span id="start-count">5</span>
-            </div>
-
-            <div id="active-workout-ui">
-                <div class="gif-container">
-                    <img id="exec-gif" src="" alt="Exercicio">
-                </div>
-                <h2 id="exec-name">Nome Exercício</h2>
-                
-                <div class="timer-display">
-                    <span id="exec-timer">00:00</span>
-                    <span id="exec-reps-display"></span>
-                </div>
-
-                <div class="controls">
-                    <button id="btn-pause" onclick="togglePause()">Pause</button>
-                    <button id="btn-skip" onclick="nextExercise()">Pular</button>
-                </div>
-            </div>
-
-            <div id="rest-ui" class="hidden">
-                <h2>Descanso</h2>
-                <div id="rest-timer">00</div>
-                <p>Próximo: <span id="next-exercise-name"></span></p>
-            </div>
-
-            <div id="finish-ui" class="hidden">
-                <h1>Parabéns!</h1>
-                <p>Treino concluído.</p>
-                <button onclick="showScreen('dashboard-screen')">Sair</button>
-                <button onclick="restartWorkout()">Recomeçar</button>
+                <div id="next-info">Próximo: ...</div>
             </div>
         </section>
-
     </div>
-
-    <div id="ai-fab" onclick="toggleAIChat()">
-        <i class="fas fa-robot"></i>
-    </div>
-
-    <div id="ai-chat-window" class="hidden">
-        <div class="chat-header">
-            <span>Sensei IA</span>
-            <span onclick="toggleAIChat()">X</span>
-        </div>
-        <div id="chat-history">
-            <div class="msg ai">Olá! Sou seu treinador IA. Como posso ajudar hoje?</div>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Digite sua dúvida...">
-            <button onclick="sendMessage()">Enviar</button>
-        </div>
-    </div>
-
     <script src="script.js"></script>
 </body>
 </html>
