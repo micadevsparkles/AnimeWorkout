@@ -1,27 +1,34 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzOTUzFDPnxr-a3ZYAvMhfy1s1QkDwLGpaF0JNTOv1d07273mvKURbOjQyYdzgN5uA3/exec"; // <--- COLOQUE SUA URL AQUI
+const API_URL = "https://script.google.com/macros/s/AKfycbzOTUzFDPnxr-a3ZYAvMhfy1s1QkDwLGpaF0JNTOv1d07273mvKURbOjQyYdzgN5uA3/exec"; // <--- CERTIFIQUE-SE DE COLOCAR SUA URL
 
 // --- Estado Global ---
 let currentUser = null;
 let allExercises = [];
 let availableAvatars = [];
-let userWorkouts = [];
+let myWorkouts = [];
 let defaultWorkouts = [];
 let currentWorkoutSession = null;
 let timerInterval = null;
 let isPaused = false;
-let isResting = false;
 
 // --- Navegação ---
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
+    const target = document.getElementById(id);
+    if (target) target.classList.remove('hidden');
+    
+    // Esconde o header apenas na tela de execução para foco total
+    const header = document.getElementById('app-header');
+    if (id === 'execution-screen' || id === 'login-screen' || id === 'register-screen') {
+        header?.classList.add('hidden');
+    } else {
+        header?.classList.remove('hidden');
+    }
 }
 
 function showLogin() { showScreen('login-screen'); }
 function showRegister() { showScreen('register-screen'); }
 function showHome() { 
     showScreen('home-screen'); 
-    document.getElementById('app-header').classList.remove('hidden');
     renderWorkouts();
     updateHeaderAvatar();
 }
@@ -35,23 +42,25 @@ function showMyAccount() {
 async function handleLogin() {
     const u = document.getElementById('login-user').value;
     const p = document.getElementById('login-pass').value;
-    if(!u || !p) return alert("Preencha tudo");
+    if(!u || !p) return alert("Preencha usuário e senha");
 
-    const res = await fetch(`${API_URL}?action=login&user=${u}&pass=${p}`).then(r => r.json());
-    if(res.status === 'success') {
-        currentUser = res.userData;
-        await loadAppData();
-        showHome();
-    } else {
-        alert(res.message);
-    }
+    try {
+        const res = await fetch(`${API_URL}?action=login&user=${u}&pass=${p}`).then(r => r.json());
+        if(res.status === 'success') {
+            currentUser = res.userData;
+            currentUser.pass = p; // Guarda a senha localmente para exibir na conta
+            await loadAppData();
+            showHome();
+        } else {
+            alert(res.message);
+        }
+    } catch(e) { alert("Erro de conexão. Verifique a URL do Script."); }
 }
 
 async function checkUsername() {
     const u = document.getElementById('reg-user').value;
     const btn = document.getElementById('btn-create-acc');
     const warn = document.getElementById('user-warning');
-
     if(u.length < 4) {
         warn.innerText = "Mínimo 4 caracteres";
         btn.disabled = true;
@@ -81,15 +90,17 @@ async function handleRegister() {
 // --- Dados & App ---
 async function loadAppData() {
     const res = await fetch(`${API_URL}?action=getData&user=${currentUser.user}`).then(r => r.json());
-    allExercises = res.exercises;
-    defaultWorkouts = res.defaultWorkouts;
-    myWorkouts = res.myWorkouts;
+    allExercises = res.exercises || [];
+    defaultWorkouts = res.defaultWorkouts || [];
+    myWorkouts = res.myWorkouts || [];
     availableAvatars = res.avatars || [];
 }
 
 function renderWorkouts() {
     const defContainer = document.getElementById('default-workouts-container');
     const myContainer = document.getElementById('my-workouts-container');
+    if(!defContainer || !myContainer) return;
+
     defContainer.innerHTML = '';
     myContainer.innerHTML = '';
 
@@ -108,6 +119,7 @@ function renderWorkouts() {
 function updateHeaderAvatar() {
     const img = document.getElementById('header-avatar');
     const init = document.getElementById('header-initial');
+    if(!img || !init) return;
     if(currentUser.icon) {
         img.src = currentUser.icon;
         img.style.display = 'block';
@@ -120,39 +132,29 @@ function updateHeaderAvatar() {
 }
 
 // --- Perfil ---
-// --- Carregar Dados na Tela Minha Conta ---
 function loadProfileData() {
-    // Campos de Texto/Número
     document.getElementById('profile-user-name').innerText = currentUser.user;
     document.getElementById('edit-user').value = currentUser.user;
-    document.getElementById('edit-pass').value = currentUser.pass || ""; // Garanta que a senha venha no login
-    document.getElementById('edit-weight').value = currentUser.weight;
-    document.getElementById('edit-height').value = currentUser.height;
-    document.getElementById('edit-age').value = currentUser.age;
+    document.getElementById('edit-pass').value = currentUser.pass || "";
+    document.getElementById('edit-weight').value = currentUser.weight || "";
+    document.getElementById('edit-height').value = currentUser.height || "";
+    document.getElementById('edit-age').value = currentUser.age || "";
+    document.getElementById('edit-gender').value = currentUser.gender || "M";
+    document.getElementById('edit-goal').value = currentUser.goal || "Emagrecer";
     
-    // Dropdowns
-    document.getElementById('edit-gender').value = currentUser.gender;
-    document.getElementById('edit-goal').value = currentUser.goal;
-    
-    // Avatar
-    const img = document.getElementById('profile-avatar');
-    img.src = currentUser.icon || "https://via.placeholder.com/100?text=User";
+    document.getElementById('profile-avatar').src = currentUser.icon || "https://via.placeholder.com/100?text=User";
 
-    // Recálculo do IMC e Peso Ideal
     const h = parseFloat(currentUser.height);
     const w = parseFloat(currentUser.weight);
     if(h > 0 && w > 0) {
         const imc = (w / (h * h)).toFixed(2);
         document.getElementById('imc-display').innerText = imc;
-        
-        // Peso ideal baseado em IMC 18.5 e 24.9
         const idealMin = (18.5 * (h * h)).toFixed(1);
         const idealMax = (24.9 * (h * h)).toFixed(1);
-        document.getElementById('imc-ideal').innerText = `Peso Ideal para sua altura: ${idealMin}kg - ${idealMax}kg`;
+        document.getElementById('imc-ideal').innerText = `Peso Ideal: ${idealMin}kg - ${idealMax}kg`;
     }
 }
 
-// --- Salvar Alterações no Perfil ---
 async function saveProfileChanges() {
     const data = {
         action: 'updateProfile',
@@ -165,43 +167,17 @@ async function saveProfileChanges() {
         goal: document.getElementById('edit-goal').value
     };
 
-    // Feedback visual de carregamento
-    const btn = event.target;
-    const originalText = btn.innerHTML;
-    btn.innerText = "Salvando...";
-    btn.disabled = true;
-
-    try {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            body: new URLSearchParams(data)
-        }).then(r => r.json());
-
-        if(res.status === 'success') {
-            // Atualiza o objeto local para não precisar de novo login
-            currentUser = {...currentUser, ...data};
-            alert("Perfil atualizado com sucesso!");
-            loadProfileData();
-        } else {
-            alert("Erro ao salvar: " + res.message);
-        }
-    } catch (e) {
-        alert("Erro de conexão com o servidor.");
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
+    await fetch(API_URL, { method: 'POST', body: new URLSearchParams(data) });
+    currentUser = {...currentUser, ...data};
+    alert("Perfil salvo!");
+    loadProfileData();
+    updateHeaderAvatar();
 }
-// Avatar Picker
+
 function openAvatarSelector() {
     const modal = document.getElementById('avatar-modal');
     const list = document.getElementById('avatar-list');
     list.innerHTML = '';
-    
-    if(availableAvatars.length === 0) {
-        list.innerHTML = '<p style="grid-column: 1/-1;">Nenhuma imagem cadastrada na planilha.</p>';
-    }
-
     availableAvatars.forEach(url => {
         const img = document.createElement('img');
         img.src = url;
@@ -210,10 +186,7 @@ function openAvatarSelector() {
             modal.classList.add('hidden');
             loadProfileData();
             updateHeaderAvatar();
-            await fetch(API_URL, {
-                method: 'POST',
-                body: new URLSearchParams({ action: 'updateProfile', user: currentUser.user, icon: url })
-            });
+            await fetch(API_URL, { method: 'POST', body: new URLSearchParams({ action: 'updateProfile', user: currentUser.user, icon: url }) });
         };
         list.appendChild(img);
     });
@@ -223,41 +196,25 @@ function closeAvatarModal() { document.getElementById('avatar-modal').classList.
 
 // --- Detalhes do Treino ---
 function openWorkoutDetail(workout) {
-    currentWorkoutSession = JSON.parse(JSON.stringify(workout)); // Cópia segura
-    
+    currentWorkoutSession = JSON.parse(JSON.stringify(workout));
     document.getElementById('detail-title').innerText = workout.name;
     document.getElementById('detail-reps').innerText = workout.reps;
-    document.getElementById('detail-dur').innerText = workout.dur; // Agora é minutos
+    document.getElementById('detail-dur').innerText = workout.dur;
     
     const list = document.getElementById('detail-exercise-list');
     list.innerHTML = '';
 
-    // LÓGICA DE PARSING ROBUSTA (Resolve o problema do clique não funcionar)
     let exercises = [];
-    try {
-        if (Array.isArray(workout.list)) {
-            exercises = workout.list;
-        } else if (typeof workout.list === 'string') {
-            // Tenta parsear JSON, se falhar, faz split por vírgula
-            if(workout.list.trim().startsWith('[')) {
-                exercises = JSON.parse(workout.list);
-            } else {
-                exercises = workout.list.split(',').map(item => item.trim());
-            }
-        }
-    } catch (e) {
-        console.error("Erro ao ler lista de exercicios", e);
-        exercises = ["Erro ao carregar lista"];
-    }
+    if (typeof workout.list === 'string') {
+        exercises = workout.list.startsWith('[') ? JSON.parse(workout.list) : workout.list.split(',').map(i => i.trim());
+    } else { exercises = workout.list; }
 
     currentWorkoutSession.parsedExercises = exercises;
-
     exercises.forEach(exName => {
         const li = document.createElement('li');
         li.innerText = exName;
         list.appendChild(li);
     });
-
     showScreen('workout-detail-screen');
 }
 
@@ -277,33 +234,26 @@ function showCreateWorkout() {
 function filterExercises() {
     const term = document.getElementById('search-exercise').value.toLowerCase();
     document.querySelectorAll('.select-item').forEach(div => {
-        const txt = div.innerText.toLowerCase();
-        div.style.display = txt.includes(term) ? 'flex' : 'none';
+        div.style.display = div.innerText.toLowerCase().includes(term) ? 'flex' : 'none';
     });
 }
 
 async function submitNewWorkout() {
     const name = document.getElementById('new-workout-name').value;
     const reps = document.getElementById('new-reps').value;
-    const dur = document.getElementById('new-dur').value; // Minutos
-    const rest = document.getElementById('new-rest').value; // Segundos
-    
+    const dur = document.getElementById('new-dur').value;
+    const rest = document.getElementById('new-rest').value;
     const selected = [];
     document.querySelectorAll('#exercise-selection-list input:checked').forEach(c => selected.push(c.value));
-
-    if(!name || selected.length === 0) return alert("Nome e exercícios obrigatórios");
-
-    const jsonList = JSON.stringify(selected);
-    const newW = { name, list: selected, reps, dur, rest, type: 'custom' };
-    myWorkouts.push(newW);
+    
+    if(!name || selected.length === 0) return alert("Preencha o nome e escolha exercícios");
 
     await fetch(API_URL, {
         method: 'POST',
-        body: new URLSearchParams({
-            action: 'saveWorkout', user: currentUser.user, 
-            name, exercises: jsonList, reps, dur, rest
-        })
+        body: new URLSearchParams({ action: 'saveWorkout', user: currentUser.user, name, exercises: JSON.stringify(selected), reps, duration: dur, rest })
     });
+    alert("Treino salvo!");
+    await loadAppData();
     showHome();
 }
 
@@ -314,6 +264,9 @@ let timeLeft = 0;
 function startWorkoutSession() {
     showScreen('execution-screen');
     execIndex = 0;
+    // Reseta possíveis overlays de fim
+    document.getElementById('end-screen').classList.add('hidden');
+    document.getElementById('rest-screen').classList.add('hidden');
     startCountdown();
 }
 
@@ -323,29 +276,22 @@ function startCountdown() {
     overlay.classList.remove('hidden');
     let count = 5;
     num.innerText = count;
-    
     const int = setInterval(() => {
         count--;
-        if(count > 0) {
-            num.innerText = count;
-        } else {
+        if(count > 0) num.innerText = count;
+        else {
             num.innerText = "Comece!";
             clearInterval(int);
-            setTimeout(() => {
-                overlay.classList.add('hidden');
-                runExercise();
-            }, 1000);
+            setTimeout(() => { overlay.classList.add('hidden'); runExercise(); }, 1000);
         }
     }, 1000);
 }
 
 function runExercise() {
-    isResting = false;
     if(execIndex >= currentWorkoutSession.parsedExercises.length) {
         finishWorkout();
         return;
     }
-
     const exName = currentWorkoutSession.parsedExercises[execIndex];
     const exData = allExercises.find(e => e.name.toLowerCase() === exName.toLowerCase()) || { gif: '' };
 
@@ -353,10 +299,7 @@ function runExercise() {
     document.getElementById('exec-reps').innerText = currentWorkoutSession.reps;
     document.getElementById('exec-gif').src = exData.gif || 'https://via.placeholder.com/300?text=Sem+Gif';
     
-    // CONVERSÃO DE MINUTOS PARA SEGUNDOS
-    const minutes = parseFloat(currentWorkoutSession.dur);
-    timeLeft = Math.floor(minutes * 60); 
-    
+    timeLeft = Math.floor(parseFloat(currentWorkoutSession.dur) * 60);
     updateTimerDisplay(timeLeft, 'exec-timer');
     
     isPaused = false;
@@ -367,44 +310,37 @@ function runExercise() {
         if(!isPaused) {
             timeLeft--;
             updateTimerDisplay(timeLeft, 'exec-timer');
-            if(timeLeft <= 0) {
-                clearInterval(timerInterval);
-                startRest();
-            }
+            if(timeLeft <= 0) { clearInterval(timerInterval); startRest(); }
         }
     }, 1000);
 }
 
 function skipExercise() {
     clearInterval(timerInterval);
-    // Se estiver descansando, pula o descanso e vai pro proximo
-    // Se estiver fazendo, pula direto pro descanso (ou proximo exercicio direto?)
-    // Vamos fazer pular direto para o próximo exercício para ser mais rápido.
-    execIndex++;
     document.getElementById('rest-screen').classList.add('hidden');
+    execIndex++;
     runExercise();
 }
 
 function startRest() {
-    isResting = true;
     const restScreen = document.getElementById('rest-screen');
     restScreen.classList.remove('hidden');
-    
     const nextEx = currentWorkoutSession.parsedExercises[execIndex + 1] || "Fim";
     document.getElementById('next-exercise-name').innerText = nextEx;
-
     let restTime = parseInt(currentWorkoutSession.rest);
     updateTimerDisplay(restTime, 'rest-timer');
 
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-        restTime--;
-        updateTimerDisplay(restTime, 'rest-timer');
-        if(restTime <= 0) {
-            clearInterval(timerInterval);
-            restScreen.classList.add('hidden');
-            execIndex++;
-            runExercise();
+        if(!isPaused) {
+            restTime--;
+            updateTimerDisplay(restTime, 'rest-timer');
+            if(restTime <= 0) {
+                clearInterval(timerInterval);
+                restScreen.classList.add('hidden');
+                execIndex++;
+                runExercise();
+            }
         }
     }, 1000);
 }
@@ -417,19 +353,10 @@ function togglePause() {
 function updateTimerDisplay(sec, elemId) {
     const m = Math.floor(sec / 60).toString().padStart(2, '0');
     const s = (sec % 60).toString().padStart(2, '0');
-    document.getElementById(elemId).innerText = `${m}:${s}`;
+    const el = document.getElementById(elemId);
+    if(el) el.innerText = `${m}:${s}`;
 }
 
-function finishWorkout() {
-    document.getElementById('end-screen').classList.remove('hidden');
-}
-
-function restartWorkout() {
-    document.getElementById('end-screen').classList.add('hidden');
-    startWorkoutSession();
-}
-
-function exitWorkout() {
-    document.getElementById('end-screen').classList.add('hidden');
-    showHome();
-}
+function finishWorkout() { document.getElementById('end-screen').classList.remove('hidden'); }
+function restartWorkout() { startWorkoutSession(); }
+function exitWorkout() { showHome(); }
