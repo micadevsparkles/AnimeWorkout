@@ -19,7 +19,7 @@
         </div>
     </section>
 
-    <section id="register-screen" class="screen">
+    <section id="register-screen" class="screen hidden">
         <div class="auth-container">
             <h2>Criar Conta</h2>
             <input type="text" id="reg-user" placeholder="Usuário (min 4 chars)" onkeyup="checkUsername()">
@@ -53,133 +53,112 @@
 
     <section id="home-screen" class="screen hidden">
         <h3>Treinos Padrão</h3>
-        <div id="default-workouts-container" class="scroll-container">
-            </div>
+        <div id="default-workouts-container" class="scroll-container"></div>
 
         <div class="section-header">
             <h3>Meus Treinos</h3>
             <button class="add-btn" onclick="showCreateWorkout()"><i class="fas fa-plus"></i></button>
         </div>
-        <div id="my-workouts-container" class="scroll-container">
-            </div>
+        <div id="my-workouts-container" class="scroll-container"></div>
     </section>
 
     <section id="account-screen" class="screen hidden">
-    <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Voltar</div>
-    
-    <div class="profile-header">
-        <div class="avatar-large-container">
-            <img id="profile-avatar" src="" alt="Avatar">
-            <div class="edit-icon" onclick="openAvatarSelector()"><i class="fas fa-pen"></i></div>
-        </div>
-        <h2 id="profile-user-name">Usuario</h2>
-    </div>
-    
-    <div class="stats-card">
-        <h4>Seu IMC</h4>
-        <div id="imc-display" style="font-size: 2em; font-weight: bold; color: var(--accent);">--</div>
-        <p id="imc-ideal" style="color: var(--text-muted); font-size: 0.9em;">Peso Ideal: -- kg</p>
-    </div>
-
-    <div class="form-edit">
-        <div class="input-group">
-            <label><i class="fas fa-user"></i> Usuário</label>
-            <input type="text" id="edit-user" readonly style="background: #333; cursor: not-allowed;">
-            <small style="color: #666;">O nome de usuário não pode ser alterado.</small>
-        </div>
-
-        <div class="input-group">
-            <label><i class="fas fa-lock"></i> Senha</label>
-            <input type="password" id="edit-pass">
-        </div>
-
-        <div class="row-inputs">
-            <div class="input-group">
-                <label><i class="fas fa-weight"></i> Peso (kg)</label>
-                <input type="number" id="edit-weight">
+        <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Voltar</div>
+        
+        <div class="profile-header">
+            <div class="avatar-large-container">
+                <img id="profile-avatar" src="" alt="Avatar">
+                <div class="edit-icon" onclick="openAvatarSelector()"><i class="fas fa-pen"></i></div>
             </div>
-            <div class="input-group">
-                <label><i class="fas fa-ruler-vertical"></i> Altura (m)</label>
-                <input type="number" step="0.01" id="edit-height">
-            </div>
+            <h2 id="profile-user-name">Usuario</h2>
+        </div>
+        
+        <div class="stats-card">
+            <h4>Seu IMC</h4>
+            <div id="imc-display" style="font-size: 2em; font-weight: bold; color: var(--accent);">--</div>
+            <p id="imc-ideal" style="color: var(--text-muted); font-size: 0.9em;">Peso Ideal: -- kg</p>
         </div>
 
-        <div class="row-inputs">
+        <div class="form-edit">
             <div class="input-group">
-                <label><i class="fas fa-birthday-cake"></i> Idade</label>
-                <input type="number" id="edit-age">
+                <label><i class="fas fa-user"></i> Usuário</label>
+                <input type="text" id="edit-user" readonly style="background: #333; cursor: not-allowed;">
+                <small style="color: #666;">O nome de usuário não pode ser alterado.</small>
             </div>
+
             <div class="input-group">
-                <label><i class="fas fa-venus-mars"></i> Gênero</label>
-                <select id="edit-gender">
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
+                <label><i class="fas fa-lock"></i> Senha</label>
+                <input type="password" id="edit-pass">
+            </div>
+
+            <div class="row-inputs">
+                <div class="input-group">
+                    <label><i class="fas fa-weight"></i> Peso (kg)</label>
+                    <input type="number" id="edit-weight">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-ruler-vertical"></i> Altura (m)</label>
+                    <input type="number" step="0.01" id="edit-height">
+                </div>
+            </div>
+
+            <div class="row-inputs">
+                <div class="input-group">
+                    <label><i class="fas fa-birthday-cake"></i> Idade</label>
+                    <input type="number" id="edit-age">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-venus-mars"></i> Gênero</label>
+                    <select id="edit-gender">
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label><i class="fas fa-bullseye"></i> Objetivo</label>
+                <select id="edit-goal">
+                    <option value="Emagrecer">Emagrecer</option>
+                    <option value="Engordar">Engordar</option>
+                    <option value="Massa">Aumentar massa muscular</option>
+                    <option value="Forca">Aumentar força</option>
                 </select>
             </div>
-        </div>
 
-        <div class="input-group">
-            <label><i class="fas fa-bullseye"></i> Objetivo</label>
-            <select id="edit-goal">
-                <option value="Emagrecer">Emagrecer</option>
-                <option value="Engordar">Engordar</option>
-                <option value="Massa">Aumentar massa muscular</option>
-                <option value="Forca">Aumentar força</option>
-            </select>
+            <button onclick="saveProfileChanges()" style="margin-top: 20px; width: 100%;">
+                <i class="fas fa-save"></i> Salvar Alterações
+            </button>
         </div>
-
-        <button onclick="saveProfileChanges()" style="margin-top: 20px; width: 100%;">
-            <i class="fas fa-save"></i> Salvar Alterações
-        </button>
-    </div>
-    
     </section>
+
     <section id="workout-detail-screen" class="screen hidden">
         <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Voltar</div>
         <h1 id="detail-title">Nome do Treino</h1>
-        
         <div class="detail-stats">
             <span><i class="fas fa-redo"></i> <span id="detail-reps">0</span>x</span>
             <span><i class="fas fa-clock"></i> <span id="detail-dur">0</span> min</span>
         </div>
-
         <button class="start-btn" onclick="startWorkoutSession()">Começar Treino</button>
-
         <ul id="detail-exercise-list"></ul>
     </section>
+
     <section id="create-workout-screen" class="screen hidden">
         <div class="back-nav" onclick="showHome()"><i class="fas fa-arrow-left"></i> Cancelar</div>
         <h2>Novo Treino</h2>
         <input type="text" id="new-workout-name" placeholder="Nome do Treino">
-        
         <div class="row-inputs">
             <input type="number" id="new-reps" placeholder="Reps">
             <input type="number" id="new-dur" placeholder="Duração (min)">
             <input type="number" id="new-rest" placeholder="Descanso (s)">
         </div>
-        ```
+        <input type="text" id="search-exercise" placeholder="Buscar exercício..." onkeyup="filterExercises()">
+        <div id="exercise-selection-list"></div>
+        <button onclick="submitNewWorkout()" style="width: 100%; margin-top: 20px;">Salvar Treino</button>
+    </section>
 
-**Seção "TELA EXECUÇÃO" (Adicionado botão Pular):**
-```html
-        <div class="exec-container">
-            <div class="gif-container">
-                <img id="exec-gif" src="" alt="Exercicio">
-            </div>
-            <h2 id="exec-name">Nome Exercício</h2>
-            
-            <div class="exec-info">
-                <span><i class="fas fa-redo"></i> <span id="exec-reps">10</span></span>
-            </div>
-
-            <div class="timer-display" id="exec-timer">00:00</div>
-            
-            <div style="display: flex; gap: 10px; width: 100%;">
-                <button id="btn-pause" style="flex: 1;" onclick="togglePause()">Pausar</button>
-                <button id="btn-skip" style="flex: 1; background-color: #444;" onclick="skipExercise()">Pular <i class="fas fa-forward"></i></button>
-            </div>
-        </div>
     <section id="execution-screen" class="screen hidden">
-        <div id="start-countdown" class="overlay">
+        <div id="start-countdown" class="overlay hidden">
             <span id="start-count-number">5</span>
         </div>
 
@@ -189,26 +168,36 @@
             <button onclick="exitWorkout()">Sair</button>
         </div>
 
+        <div id="rest-screen" class="overlay hidden">
+            <h2>Descanso</h2>
+            <div class="timer-display" id="rest-timer">00:10</div>
+            <p>Próximo: <span id="next-exercise-name">...</span></p>
+            <button onclick="skipExercise()" style="margin-top: 20px; background: var(--accent);">Pular Descanso</button>
+        </div>
+
         <div class="exec-container">
             <div class="gif-container">
                 <img id="exec-gif" src="" alt="Exercicio">
             </div>
             <h2 id="exec-name">Nome Exercício</h2>
-            
             <div class="exec-info">
-                <span><i class="fas fa-redo"></i> <span id="exec-reps">10</span></span>
+                <span><i class="fas fa-redo"></i> <span id="exec-reps">10</span> reps</span>
             </div>
-
-            <div class="timer-display" id="exec-timer">00:30</div>
-            <button id="btn-pause" onclick="togglePause()">Pausar</button>
-        </div>
-
-        <div id="rest-screen" class="overlay hidden">
-            <h2>Descanso</h2>
-            <div class="timer-display" id="rest-timer">00:10</div>
-            <p>Próximo: <span id="next-exercise-name">...</span></p>
+            <div class="timer-display" id="exec-timer">00:00</div>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button id="btn-pause" style="flex: 1;" onclick="togglePause()">Pausar</button>
+                <button id="btn-skip" style="flex: 1; background-color: #444;" onclick="skipExercise()">Pular <i class="fas fa-forward"></i></button>
+            </div>
         </div>
     </section>
+
+    <div id="avatar-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Escolha seu Avatar</h3>
+            <div id="avatar-list" class="grid-avatars"></div>
+            <button onclick="closeAvatarModal()" style="margin-top: 15px; background: #555;">Fechar</button>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
