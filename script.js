@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzOTUzFDPnxr-a3ZYAvMhfy1s1QkDwLGpaF0JNTOv1d07273mvKURbOjQyYdzgN5uA3/exec"; // <--- CERTIFIQUE-SE DE COLOCAR SUA URL
+const API_URL = "https://script.google.com/macros/s/AKfycbzOTUzFDPnxr-a3ZYAvMhfy1s1QkDwLGpaF0JNTOv1d07273mvKURbOjQyYdzgN5uA3/exec";
 
 // --- Estado Global ---
 let currentUser = null;
@@ -9,6 +9,8 @@ let defaultWorkouts = [];
 let currentWorkoutSession = null;
 let timerInterval = null;
 let isPaused = false;
+let execIndex = 0;
+let timeLeft = 0;
 
 // --- Navegação ---
 function showScreen(id) {
@@ -16,7 +18,6 @@ function showScreen(id) {
     const target = document.getElementById(id);
     if (target) target.classList.remove('hidden');
     
-    // Esconde o header apenas na tela de execução para foco total
     const header = document.getElementById('app-header');
     if (id === 'execution-screen' || id === 'login-screen' || id === 'register-screen') {
         header?.classList.add('hidden');
@@ -48,13 +49,13 @@ async function handleLogin() {
         const res = await fetch(`${API_URL}?action=login&user=${u}&pass=${p}`).then(r => r.json());
         if(res.status === 'success') {
             currentUser = res.userData;
-            currentUser.pass = p; // Guarda a senha localmente para exibir na conta
+            currentUser.pass = p; 
             await loadAppData();
             showHome();
         } else {
             alert(res.message);
         }
-    } catch(e) { alert("Erro de conexão. Verifique a URL do Script."); }
+    } catch(e) { alert("Erro de conexão."); }
 }
 
 async function checkUsername() {
@@ -141,7 +142,6 @@ function loadProfileData() {
     document.getElementById('edit-age').value = currentUser.age || "";
     document.getElementById('edit-gender').value = currentUser.gender || "M";
     document.getElementById('edit-goal').value = currentUser.goal || "Emagrecer";
-    
     document.getElementById('profile-avatar').src = currentUser.icon || "https://via.placeholder.com/100?text=User";
 
     const h = parseFloat(currentUser.height);
@@ -184,7 +184,7 @@ function openAvatarSelector() {
         img.onclick = async () => {
             currentUser.icon = url;
             modal.classList.add('hidden');
-            loadProfileData();
+            document.getElementById('profile-avatar').src = url;
             updateHeaderAvatar();
             await fetch(API_URL, { method: 'POST', body: new URLSearchParams({ action: 'updateProfile', user: currentUser.user, icon: url }) });
         };
@@ -192,6 +192,7 @@ function openAvatarSelector() {
     });
     modal.classList.remove('hidden');
 }
+
 function closeAvatarModal() { document.getElementById('avatar-modal').classList.add('hidden'); }
 
 // --- Detalhes do Treino ---
@@ -258,13 +259,9 @@ async function submitNewWorkout() {
 }
 
 // --- Execução do Treino ---
-let execIndex = 0;
-let timeLeft = 0;
-
 function startWorkoutSession() {
     showScreen('execution-screen');
     execIndex = 0;
-    // Reseta possíveis overlays de fim
     document.getElementById('end-screen').classList.add('hidden');
     document.getElementById('rest-screen').classList.add('hidden');
     startCountdown();
@@ -280,7 +277,7 @@ function startCountdown() {
         count--;
         if(count > 0) num.innerText = count;
         else {
-            num.innerText = "Comece!";
+            num.innerText = "GO!";
             clearInterval(int);
             setTimeout(() => { overlay.classList.add('hidden'); runExercise(); }, 1000);
         }
@@ -324,10 +321,14 @@ function skipExercise() {
 
 function startRest() {
     const restScreen = document.getElementById('rest-screen');
+    if (execIndex >= currentWorkoutSession.parsedExercises.length - 1) {
+        finishWorkout();
+        return;
+    }
     restScreen.classList.remove('hidden');
-    const nextEx = currentWorkoutSession.parsedExercises[execIndex + 1] || "Fim";
+    const nextEx = currentWorkoutSession.parsedExercises[execIndex + 1];
     document.getElementById('next-exercise-name').innerText = nextEx;
-    let restTime = parseInt(currentWorkoutSession.rest);
+    let restTime = parseInt(currentWorkoutSession.rest) || 10;
     updateTimerDisplay(restTime, 'rest-timer');
 
     clearInterval(timerInterval);
@@ -357,6 +358,9 @@ function updateTimerDisplay(sec, elemId) {
     if(el) el.innerText = `${m}:${s}`;
 }
 
-function finishWorkout() { document.getElementById('end-screen').classList.remove('hidden'); }
+function finishWorkout() { 
+    clearInterval(timerInterval);
+    document.getElementById('end-screen').classList.remove('hidden'); 
+}
 function restartWorkout() { startWorkoutSession(); }
 function exitWorkout() { showHome(); }
