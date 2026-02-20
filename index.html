@@ -1,151 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Shounen Training</title>
-<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjqAsDzWK5BVq2CpKFdvZng4oIdWzefn8wBw&s">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shounen Training</title>
+  <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjqAsDzWK5BVq2CpKFdvZng4oIdWzefn8wBw&s">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<!-- LOADING -->
-<div id="loading" class="loading hidden">
-  <div class="spinner"></div>
-  <p>Carregando energia...</p>
-</div>
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p>Canalizando energia...</p>
+  </div>
 
-<!-- LOGIN -->
-<section id="loginScreen" class="screen active">
-  <h1 class="title">⚔️ Shounen Training</h1>
+  <section id="loginScreen" class="screen active">
+    <h1 class="title">⚔️ Shounen Training</h1>
+    <input id="logUser" placeholder="Usuário">
+    <input id="logSenha" type="password" placeholder="Senha">
+    <button onclick="fazerLogin()">Entrar</button>
+    <p id="logMsg" class="msg"></p>
+    <a onclick="trocarTela('registerScreen')" class="link">Não possui conta? Crie uma!</a>
+  </section>
 
-  <input id="loginUsuario" placeholder="Usuário">
-  <input id="loginSenha" type="password" placeholder="Senha">
+  <section id="registerScreen" class="screen">
+    <h2>Criar Conta</h2>
+    <input id="cadUser" placeholder="Usuário">
+    <input id="cadSenha" type="password" placeholder="Senha">
+    <input id="cadPeso" placeholder="Peso (kg)" type="number">
+    <input id="cadAltura" placeholder="Altura (cm)" type="number">
+    <input id="cadIdade" placeholder="Idade" type="number">
+    <select id="cadGenero">
+      <option value="">Gênero</option>
+      <option>Masculino</option>
+      <option>Feminino</option>
+      <option>Outro</option>
+    </select>
+    <select id="cadObjetivo">
+      <option value="">Objetivo</option>
+      <option>Emagrecer</option>
+      <option>Aumentar força</option>
+      <option>Aumentar massa muscular</option>
+    </select>
+    <button onclick="fazerCadastro()">Salvar</button>
+    <p id="cadMsg" class="msg"></p>
+    <a onclick="trocarTela('loginScreen')" class="link">Voltar para Login</a>
+  </section>
 
-  <button onclick="login()">Entrar</button>
-  <p id="loginMsg" class="msg"></p>
+  <section id="homeScreen" class="screen">
+    <header class="header">
+      <div id="avatarHome" class="avatar" onclick="abrirPerfil()"></div>
+      <h2>Dashboard</h2>
+    </header>
 
-  <a onclick="mostrarCadastro()" class="link">
-    Não possui conta? Crie uma!
-  </a>
-</section>
-
-<!-- CADASTRO -->
-<section id="cadastroScreen" class="screen">
-  <h2>Criar Conta</h2>
-
-  <input id="cadUsuario" placeholder="Usuário">
-  <input id="cadSenha" type="password" placeholder="Senha">
-  <input id="cadPeso" placeholder="Peso">
-  <input id="cadAltura" placeholder="Altura">
-  <input id="cadIdade" placeholder="Idade">
-
-  <select id="cadGenero">
-    <option value="">Gênero</option>
-    <option>Masculino</option>
-    <option>Feminino</option>
-    <option>Outro</option>
-  </select>
-
-  <select id="cadObjetivo">
-    <option value="">Objetivo</option>
-    <option>Emagrecer</option>
-    <option>Aumentar força</option>
-    <option>Aumentar massa muscular</option>
-  </select>
-
-  <button onclick="registrar()">Salvar</button>
-  <p id="cadMsg" class="msg"></p>
-
-  <a onclick="mostrarLogin()" class="link">Voltar</a>
-</section>
-
-<!-- HOME -->
-<section id="homeScreen" class="screen">
-
-  <header class="header">
-    <div id="avatarCircle" class="avatar" onclick="abrirConta()">
-      G
+    <div class="faixa">
+      <h3>🔥 Missão do Dia</h3>
+      <div id="boxMissao" class="lista-treinos"></div>
     </div>
-    <h2 id="welcomeUser">Bem-vindo</h2>
-  </header>
 
-  <div class="faixa">
-    <h3>🔥 Missão do dia</h3>
-    <div id="missaoBox">Carregando...</div>
-  </div>
-
-  <div class="faixa">
-    <h3>🥋 Indicações do sensei</h3>
-    <div id="padraoBox">Carregando...</div>
-  </div>
-
-  <div class="faixa">
-    <h3>⚡ Treinamento solo</h3>
-    <button class="plusBtn" onclick="abrirNovoTreino()">＋</button>
-    <div id="meusTreinosBox"></div>
-  </div>
-
-</section>
-
-  <section id="perfilScreen" class="screen">
-  <button onclick="trocarTela('homeScreen')" class="plusBtn">← Voltar</button>
-  
-  <div class="faixa" style="text-align:center;">
-    <div id="perfilAvatar" class="avatarGrande"></div>
-    <button class="btnEdit" onclick="editarAvatar()">Editar Foto</button>
-    
-    <div class="ofensivaFogo">
-      <span>🔥</span>
-      <span id="perfilOfensiva">0</span>
+    <div class="faixa">
+      <h3>🥋 Indicações do Sensei</h3>
+      <div id="boxPadroes" class="lista-treinos"></div>
     </div>
-  </div>
 
-  <div class="faixa">
-    <h3>📊 Painel do Guerreiro</h3>
-    <div class="progressBox">
-      <div class="progressLabel">Rank: <span id="txtRank">E</span> (<span id="txtXP">0</span> XP)</div>
-      <div class="progressBar"><div id="barXP" class="progressFill xpBar"></div></div>
+    <div class="faixa">
+      <h3>⚡ Treinamento Solo</h3>
+      <button class="btn-novo" onclick="abrirCriacaoTreino()">+ Criar Novo Treino</button>
+      <div id="boxMeusTreinos" class="lista-treinos"></div>
     </div>
-    <div class="progressBox">
-      <div class="progressLabel">Aura / Level: <span id="txtLevel">1</span> (<span id="txtAura">0</span> Aura)</div>
-      <div class="progressBar"><div id="barAura" class="progressFill auraBar"></div></div>
-    </div>
-  </div>
+  </section>
 
-  <div class="faixa">
-    <h3>🏆 Conquistas</h3>
-    <div id="conquistasBox" class="badges"></div>
-  </div>
+  <div id="modalContainer"></div>
 
-  <div class="faixa">
-    <h3>⚔️ Rival</h3>
-    <div id="rivalBox">Nenhum rival definido</div>
-  </div>
-
-  <div class="faixa">
-    <h3>⚙️ Dados do Usuário</h3>
-    <label>Usuário: <input id="editUser" disabled></label>
-    <label>Senha: <input id="editSenha" type="password"></label>
-    <label>Peso: <input id="editPeso"></label>
-    <label>Altura: <input id="editAltura"></label>
-    <label>Gênero: 
-      <select id="editGenero">
-        <option>Masculino</option><option>Feminino</option><option>Outro</option>
-      </select>
-    </label>
-    <label>Objetivo:
-      <select id="editObjetivo">
-        <option>Emagrecer</option>
-        <option>Aumentar força</option>
-        <option>Aumentar massa muscular</option>
-      </select>
-    </label>
-    <label>Rival (Nome): <input id="editRivalNome"></label>
-    <button onclick="salvarDadosPerfil()">Atualizar Dados</button>
-  </div>
-</section>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
