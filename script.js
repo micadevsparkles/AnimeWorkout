@@ -139,7 +139,7 @@ async function abrirNovoTreino(){
   showLoading(false);
 
   const lista = data.exercicios.map(e=>`
-    <label>
+    <label class="checkItem">
       <input type="checkbox" value="${e.Exercício}">
       ${e.Exercício}
     </label>
@@ -147,19 +147,22 @@ async function abrirNovoTreino(){
 
   const html = `
     <div class="modal">
-      <div class="modalBox">
+      <div class="modalBox modalScroll">
 
         <h3>Novo Treinamento</h3>
 
         <input id="novoNome" placeholder="Nome do Treino">
 
-        <input id="buscaEx" placeholder="Buscar exercício">
-
-        <div id="listaEx">${lista}</div>
-
         <input id="novoDescanso" placeholder="Descanso (seg)">
         <input id="novoReps" placeholder="Repetições">
         <input id="novoDuracao" placeholder="Duração total (min)">
+
+        <h4>Selecionar técnicas</h4>
+        <input id="buscaEx" placeholder="Buscar exercício" oninput="filtrarExercicios()">
+
+        <div id="listaEx" class="listaExercicios">
+          ${lista}
+        </div>
 
         <button onclick="salvarTreino()">Salvar</button>
         <button onclick="fecharModal()">Cancelar</button>
@@ -170,12 +173,22 @@ async function abrirNovoTreino(){
 
   document.body.insertAdjacentHTML("beforeend", html);
 }
-
 /* ================= SALVAR TREINO ================= */
 
 async function salvarTreino(){
 
   const checks = [...document.querySelectorAll("#listaEx input:checked")];
+
+  if(checks.length === 0){
+    alert("⚠️ Selecione pelo menos uma técnica, shounen!");
+    return;
+  }
+
+  if(!novoNome.value){
+    alert("⚠️ Defina um nome para o treino.");
+    return;
+  }
+
   const exercicios = checks.map(c=>c.value).join(",");
 
   showLoading(true);
@@ -198,6 +211,15 @@ async function salvarTreino(){
   carregarHome();
 }
 
+function filtrarExercicios(){
+  const termo = buscaEx.value.toLowerCase();
+  document.querySelectorAll("#listaEx label").forEach(l=>{
+    l.style.display =
+      l.textContent.toLowerCase().includes(termo)
+        ? "block"
+        : "none";
+  });
+}
 /* ================= MODAL ================= */
 
 function fecharModal(){
