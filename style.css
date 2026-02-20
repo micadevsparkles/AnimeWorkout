@@ -48,3 +48,20 @@ button:active { transform: scale(0.98); }
 .hidden { display: none !important; }
 .spinner { width: 50px; height: 50px; border: 5px solid #334155; border-top: 5px solid #f97316; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* ================= TEMA RPG ================= */
+.rpg-bar-container { background: #1e293b; border: 2px solid #334155; border-radius: 8px; height: 20px; width: 100%; position: relative; overflow: hidden; margin-top: 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+.rpg-bar-fill { height: 100%; transition: width 0.5s ease; }
+.bar-xp { background: linear-gradient(90deg, #10b981, #34d399); } /* Verde para XP */
+.bar-aura { background: linear-gradient(90deg, #8b5cf6, #c084fc); } /* Roxo para Aura/Mana */
+.rpg-bar-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 12px; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; line-height: 20px; }
+
+.perfil-avatar { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto; border: 3px solid #f97316; box-shadow: 0 0 15px #f97316; display: flex; align-items: center; justify-content: center; font-size: 40px; overflow: hidden; }
+.perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.btn-edit-avatar { display: block; margin: 10px auto; background: transparent; border: 1px solid #f97316; color: #f97316; padding: 5px 15px; border-radius: 20px; font-size: 12px; }
+
+.ofensiva-box { text-align: center; margin: 15px 0; font-size: 24px; color: #facc15; text-shadow: 0 0 10px #ea580c; font-weight: bold; }
+.conquista-badge { display: inline-block; background: #334155; border-left: 3px solid #fb923c; padding: 5px 10px; border-radius: 4px; font-size: 12px; margin: 5px; color: #f8fafc; }
+
+.rival-box { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px dashed #ef4444; }
+.grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
