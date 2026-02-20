@@ -1,474 +1,344 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyG2xQRn4hCwFHT4YeKpM1Uzzicav2swI_V9S8xbxS5KLPAEar7tF3nSJOcDf27rD8U/exec";
+const API_URL = "COLE_AQUI_SUA_URL_DO_WEB_APP";
 
-let usuarioLogado = null;
-let treinoAtual = null;
-let exercicioIndex = 0;
-let timer = null;
-let tempoRestante = 0;
+let userLogado = null;
+let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
+let treinoAtivo = null; // Armazena o treino que está rodando
+let timerInterval = null;
 
-/* ================= UI ================= */
-
-function showLoading(v){
-  document.getElementById("loading").classList.toggle("hidden", !v);
+/* ================= UTILS ================= */
+function showLoading(show) {
+  document.getElementById("loading").classList.toggle("hidden", !show);
 }
 
-function trocarTela(id){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+function trocarTela(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-function mostrarCadastro(){ trocarTela("cadastroScreen"); }
-function mostrarLogin(){ trocarTela("loginScreen"); }
-
-/* ================= LOGIN ================= */
-
-async function login() {
-  showLoading(true);
-
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      action: "login",
-      usuario: document.getElementById("loginUsuario").value,
-      senha: document.getElementById("loginSenha").value
-    })
-  });
-
-  const data = await res.json();
-  showLoading(false);
-
-  if (!data.existe || !data.senhaCorreta) {
-    document.getElementById("loginMsg").textContent = "Usuário ou senha inválidos!";
-    return;
-  }
-
-  usuarioLogado = data.user;
-  iniciarHome();
+async function apiCall(data) {
+  const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(data) });
+  return await res.json();
 }
 
-/* ================= CADASTRO ================= */
+/* ================= AUTH ================= */
+async function fazerLogin() {
+  const user = document.getElementById("logUser").value.trim();
+  const senha = document.getElementById("logSenha").value.trim();
+  const msg = document.getElementById("logMsg");
 
-async function registrar(){
-  showLoading(true);
-
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"registrar",
-      usuario: cadUsuario.value,
-      senha: cadSenha.value,
-      peso: cadPeso.value,
-      altura: cadAltura.value,
-      idade: cadIdade.value,
-      genero: cadGenero.value,
-      objetivo: cadObjetivo.value
-    })
-  });
-
-  await res.json();
-  showLoading(false);
-
-  cadMsg.textContent = "Usuário registrado com sucesso, faça login";
-
-  setTimeout(()=>mostrarLogin(),1500);
-}
-
-function sair() {
-  usuarioLogado = null;
-  document.getElementById("loginUsuario").value = "";
-  document.getElementById("loginSenha").value = "";
-  document.getElementById("loginMsg").textContent = "";
-  trocarTela("loginScreen");
-}
-
-/* ================= HOME ================= */
-
-function iniciarHome(){
-  trocarTela("homeScreen");
-
-  welcomeUser.textContent = "Bem-vindo, " + usuarioLogado.Usuario;
-
-  if(usuarioLogado.Icone){
-    avatarCircle.innerHTML = `<img src="${usuarioLogado.Icone}">`;
-  }else{
-    avatarCircle.textContent = usuarioLogado.Usuario[0].toUpperCase();
-  }
-
-  carregarHome();
-}
-
-async function carregarHome(){
-  showLoading(true);
-
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"listarTreinos",
-      usuario: usuarioLogado.Usuario
-    })
-  });
-
-  const data = await res.json();
-  showLoading(false);
-
-  renderTreinos(data.meusTreinos);
-}
-
-
-function sair() {
-  localStorage.removeItem("usuarioLogado");
-  window.location.href = "index.html";
-}
-
-function abrirConta() {
-  trocarTela("perfilScreen");
-  atualizarDadosTelaPerfil();
-}
-
-function atualizarDadosTelaPerfil() {
-  const u = usuarioLogado;
+  if (!user || !senha) return msg.textContent = "Preencha tudo!";
   
-  // Avatar
-  const pAvatar = document.getElementById("perfilAvatar");
-  if(u.Icone) pAvatar.innerHTML = `<img src="${u.Icone}">`;
-  else pAvatar.textContent = u.Usuario[0].toUpperCase();
-
-  // Dados Básicos
-  document.getElementById("perfilOfensiva").textContent = u.Ofensiva || 0;
-  document.getElementById("txtRank").textContent = u.Rank;
-  document.getElementById("txtXP").textContent = u.XP;
-  document.getElementById("txtLevel").textContent = u.Level;
-  document.getElementById("txtAura").textContent = u.Aura;
-
-  // Barras (Exemplo de cálculo simples de progresso)
-  document.getElementById("barXP").style.width = Math.min(100, (u.XP / 1000) * 100) + "%";
-  document.getElementById("barAura").style.width = Math.min(100, (u.Aura / 100) * 100) + "%";
-
-  // Inputs
-  document.getElementById("editUser").value = u.Usuario;
-  document.getElementById("editSenha").value = u.Senha;
-  document.getElementById("editPeso").value = u.Peso;
-  document.getElementById("editAltura").value = u.Altura;
-  document.getElementById("editGenero").value = u.Genero;
-  document.getElementById("editObjetivo").value = u.Objetivo;
-  document.getElementById("editRivalNome").value = u.Rival || "";
-
-  // Conquistas
-  const box = document.getElementById("conquistasBox");
-  box.innerHTML = (u.Conquistas || "").split(",").map(c => c ? `<span class="badge">🏅 ${c}</span>` : "").join("");
-}
-
-async function salvarDadosPerfil() {
   showLoading(true);
-  // Aqui você deve criar uma nova "action" no code.gs chamada "atualizarPerfil" 
-  // que de um update na linha do usuário com os valores dos inputs acima.
-  // ... lógica de fetch similar ao registrar ...
-  showLoading(false);
-  alert("Dados atualizados, shounen!");
-}
-
-async function editarAvatar(){
-
-  showLoading(true);
-
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({action:"listarAvatares"})
-  });
-
-  const data = await res.json();
+  const res = await apiCall({ action: "login", usuario: user, senha: senha });
   showLoading(false);
 
-  const imgs = data.lista.map(url=>`
-    <img src="${url}" class="avatarPick"
-      onclick="selecionarAvatar('${url}')">
-  `).join("");
-
-  const html = `
-    <div class="modal">
-      <div class="modalBox modalScroll">
-        <h3>Escolha seu avatar</h3>
-        <div class="avatarGrid">${imgs}</div>
-        <button onclick="fecharModal()">Fechar</button>
-      </div>
-    </div>
-  `;
-
-  document.body.insertAdjacentHTML("beforeend", html);
+  if (!res.sucesso) {
+    msg.textContent = res.msg;
+  } else {
+    userLogado = res.user;
+    msg.textContent = "";
+    iniciarHome();
+  }
 }
 
-async function selecionarAvatar(url){
+async function fazerCadastro() {
+  const data = {
+    action: "registrar",
+    usuario: document.getElementById("cadUser").value.trim(),
+    senha: document.getElementById("cadSenha").value.trim(),
+    peso: document.getElementById("cadPeso").value.trim(),
+    altura: document.getElementById("cadAltura").value.trim(),
+    idade: document.getElementById("cadIdade").value.trim(),
+    genero: document.getElementById("cadGenero").value,
+    objetivo: document.getElementById("cadObjetivo").value
+  };
+
+  const msg = document.getElementById("cadMsg");
+  if (!data.usuario || !data.senha) return msg.textContent = "Usuário e Senha são obrigatórios!";
 
   showLoading(true);
-
-  await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"salvarAvatar",
-      usuario: usuarioLogado.Usuario,
-      url
-    })
-  });
-
+  const res = await apiCall(data);
   showLoading(false);
-  fecharModal();
-  fecharModal();
-  iniciarHome();
-}
-/* ================= RENDER TREINOS ================= */
 
-function renderTreinos(lista){
-  if(!lista || lista.length===0){
-    meusTreinosBox.innerHTML = "Nenhum treino ainda.";
+  if (res.sucesso) {
+    msg.className = "msg sucesso";
+    msg.textContent = res.msg;
+    setTimeout(() => trocarTela('loginScreen'), 2000);
+  } else {
+    msg.className = "msg";
+    msg.textContent = res.msg;
+  }
+}
+
+/* ================= DASHBOARD (HOME) ================= */
+async function iniciarHome() {
+  trocarTela("homeScreen");
+  
+  // Renderiza Avatar
+  const avatar = document.getElementById("avatarHome");
+  if (userLogado.Icone) {
+    avatar.innerHTML = `<img src="${userLogado.Icone}">`;
+  } else {
+    avatar.innerHTML = userLogado.Usuario.charAt(0).toUpperCase();
+  }
+
+  showLoading(true);
+  const res = await apiCall({ action: "carregarHome", usuario: userLogado.Usuario });
+  showLoading(false);
+
+  if (res.sucesso) {
+    renderizarTreinos("boxMissao", res.missao ? [res.missao] : []);
+    renderizarTreinos("boxPadroes", res.padroes);
+    renderizarTreinos("boxMeusTreinos", res.meusTreinos);
+  }
+}
+
+function renderizarTreinos(containerId, lista) {
+  const container = document.getElementById(containerId);
+  if (!lista || lista.length === 0) {
+    container.innerHTML = "<p>Nenhum treinamento encontrado.</p>";
     return;
   }
 
-  meusTreinosBox.innerHTML = lista.map(t=>`
-    <div class="cardTreino" onclick='abrirTreino(${JSON.stringify(t)})'>
-      ⚡ ${t.NomeTreino}
-    </div>
-  `).join("");
+  container.innerHTML = lista.map(t => {
+    const titulo = t.NomeTreino || t.Missao; // NomeTreino ou MissaoDiaria
+    // Transforma o objeto em string para passar na função onclick
+    return `
+      <div class="card-treino" onclick='abrirDetalhesTreino(${JSON.stringify(t)})'>
+        <h4>${titulo}</h4>
+        <p>⏱️ ${t.Duracao}min | 🔁 ${t.Repeticoes} repetições | ⏸️ ${t.Descanso ? t.Descanso+'s' : 'N/A'}</p>
+      </div>
+    `;
+  }).join("");
 }
 
-/* ================= NOVO TREINO ================= */
-
-async function abrirNovoTreino(){
+/* ================= CRIAÇÃO DE TREINO ================= */
+async function abrirCriacaoTreino() {
   showLoading(true);
-
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({action:"listarExercicios"})
-  });
-
-  const data = await res.json();
+  const res = await apiCall({ action: "listarExercicios" });
   showLoading(false);
 
-  const lista = data.exercicios.map(e=>`
-    <label class="checkItem">
-      <input type="checkbox" value="${e.Exercício}">
-      ${e.Exercício}
+  if(res.sucesso) exerciciosDB = res.exercicios;
+
+  const htmlLista = exerciciosDB.map(ex => `
+    <label class="ex-item">
+      <input type="checkbox" value="${ex.Exercício}"> ${ex.Exercício}
     </label>
   `).join("");
 
-  const html = `
-    <div class="modal">
-      <div class="modalBox modalScroll">
-
-        <h3>Novo Treinamento</h3>
-
-        <input id="novoNome" placeholder="Nome do Treino">
-
-        <input id="novoDescanso" placeholder="Descanso (seg)">
-        <input id="novoReps" placeholder="Repetições">
-        <input id="novoDuracao" placeholder="Duração total (min)">
-
-        <h4>Selecionar técnicas</h4>
-        <input id="buscaEx" placeholder="Buscar exercício" oninput="filtrarExercicios()">
-
-        <div id="listaEx" class="listaExercicios">
-          ${lista}
+  const modalHtml = `
+    <div class="modal-overlay" id="modalCriacao">
+      <div class="modal-box">
+        <h2>Criar Treinamento Solo</h2>
+        <input id="novoNome" placeholder="Nome do Treinamento">
+        <input id="buscaEx" placeholder="Buscar técnica..." oninput="filtrarEx()">
+        <div class="lista-ex-container" id="listaExercicios">${htmlLista}</div>
+        <div style="display:flex; gap:10px;">
+          <input id="novoDescanso" type="number" placeholder="Descanso (segundos)">
+          <input id="novoReps" type="number" placeholder="Repetições">
         </div>
-
-        <button onclick="salvarTreino()">Salvar</button>
-        <button onclick="fecharModal()">Cancelar</button>
-
+        <input id="novoDuracao" type="number" placeholder="Tempo Total Estimado (min)">
+        
+        <button onclick="salvarNovoTreino()">Salvar Treino</button>
+        <button onclick="fecharModal('modalCriacao')" style="background:transparent; border:1px solid #94a3b8;">Cancelar</button>
       </div>
     </div>
   `;
-
-  document.body.insertAdjacentHTML("beforeend", html);
+  document.getElementById("modalContainer").innerHTML = modalHtml;
 }
-/* ================= SALVAR TREINO ================= */
 
-async function salvarTreino(){
+function filtrarEx() {
+  const termo = document.getElementById("buscaEx").value.toLowerCase();
+  document.querySelectorAll(".ex-item").forEach(label => {
+    label.style.display = label.textContent.toLowerCase().includes(termo) ? "flex" : "none";
+  });
+}
 
-  const checks = [...document.querySelectorAll("#listaEx input:checked")];
+async function salvarNovoTreino() {
+  const checks = Array.from(document.querySelectorAll("#listaExercicios input:checked"));
+  if (checks.length === 0) return alert("Selecione ao menos 1 técnica!");
+  
+  const nome = document.getElementById("novoNome").value;
+  if(!nome) return alert("Dê um nome ao treinamento!");
 
-  if(checks.length === 0){
-    alert("⚠️ Selecione pelo menos uma técnica, shounen!");
-    return;
-  }
-
-  if(!novoNome.value){
-    alert("⚠️ Defina um nome para o treino.");
-    return;
-  }
-
-  const exercicios = checks.map(c=>c.value).join(",");
+  const treino = {
+    action: "salvarTreino",
+    usuario: userLogado.Usuario,
+    nome: nome,
+    exercicios: checks.map(c => c.value).join(","),
+    descanso: document.getElementById("novoDescanso").value || 30,
+    repeticoes: document.getElementById("novoReps").value || 1,
+    duracao: document.getElementById("novoDuracao").value || 10
+  };
 
   showLoading(true);
-
-  await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"salvarTreino",
-      usuario: usuarioLogado.Usuario,
-      nome: novoNome.value,
-      exercicios,
-      descanso: novoDescanso.value,
-      repeticoes: novoReps.value,
-      duracao: novoDuracao.value
-    })
-  });
-
+  await apiCall(treino);
   showLoading(false);
-  fecharModal();
-  carregarHome();
+
+  fecharModal("modalCriacao");
+  iniciarHome(); // Recarrega a home para mostrar o novo treino
 }
 
-function filtrarExercicios(){
-  const termo = buscaEx.value.toLowerCase();
-  document.querySelectorAll("#listaEx label").forEach(l=>{
-    l.style.display =
-      l.textContent.toLowerCase().includes(termo)
-        ? "block"
-        : "none";
-  });
-}
-/* ================= MODAL ================= */
-
-function fecharModal(){
-  document.querySelector(".modal")?.remove();
+/* ================= DETALHES DO TREINO ================= */
+function fecharModal(id) {
+  const el = document.getElementById(id);
+  if(el) el.remove();
+  clearInterval(timerInterval); // Para timers se existirem
 }
 
-/* ================= ABRIR TREINO ================= */
+function abrirDetalhesTreino(treino) {
+  const titulo = treino.NomeTreino || treino.Missao;
+  const exLista = treino.Exercicios.split(",").map(e => `<li>${e.trim()}</li>`).join("");
 
-function abrirTreino(treino){
-  treinoAtual = treino;
-  exercicioIndex = 0;
+  const modalHtml = `
+    <div class="modal-overlay" id="modalDetalhes">
+      <div class="modal-box">
+        <h2>${titulo}</h2>
+        <p><strong>Tempo Total:</strong> ${treino.Duracao} minutos</p>
+        <p><strong>Sequência:</strong> ${treino.Repeticoes} repetições</p>
+        <p><strong>Descanso:</strong> ${treino.Descanso || 30} segundos</p>
+        
+        <button onclick='iniciarModoEvolucao(${JSON.stringify(treino)})' style="background:linear-gradient(90deg, #3b82f6, #06b6d4);">🚀 Modo Evolução</button>
+        
+        <h4 style="margin-top:20px;">Técnicas:</h4>
+        <ul style="color:#94a3b8; font-size:14px;">${exLista}</ul>
 
-  const lista = treino.Exercicios.split(",")
-    .map(e=>`<li>${e}</li>`).join("");
-
-  const html = `
-    <div class="modal">
-      <div class="modalBox">
-
-        <h2>${treino.NomeTreino}</h2>
-        <p>Duração: ${treino.Duracao} min</p>
-        <p>Repetições: ${treino.Repeticoes}</p>
-        <p>Descanso: ${treino.Descanso}s</p>
-
-        <button onclick="modoEvolucao()">🚀 Modo evolução</button>
-
-        <ul>${lista}</ul>
-
-        <button onclick="fecharModal()">Fechar</button>
+        <button onclick="fecharModal('modalDetalhes')" style="background:transparent; border:1px solid #94a3b8; margin-top:20px;">Voltar</button>
       </div>
     </div>
   `;
-
-  document.body.insertAdjacentHTML("beforeend", html);
+  document.getElementById("modalContainer").innerHTML = modalHtml;
 }
 
-/* ================= MODO EVOLUÇÃO ================= */
+/* ================= MODO EVOLUÇÃO (PLAYER) ================= */
+async function iniciarModoEvolucao(treino) {
+  showLoading(true);
+  // Busca os gifs e detalhes dos exercícios lá do sheets
+  const res = await apiCall({ action: "detalharTreino", exerciciosStr: treino.Exercicios });
+  showLoading(false);
 
-async function modoEvolucao(){
-  fecharModal();
+  if(!res.sucesso) return alert("Erro ao carregar os dados dos exercícios.");
 
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"detalharExercicios",
-      nomes: treinoAtual.Exercicios
-    })
-  });
+  fecharModal("modalDetalhes");
 
-  const data = await res.json();
-  treinoAtual.listaDetalhada = data.lista;
+  treinoAtivo = {
+    dadosBase: treino,
+    exercicios: res.exerciciosDetalhes,
+    indexAtual: 0,
+    pausado: false,
+    tempoRestante: 0
+  };
 
-  iniciarExercicio();
+  tocarExercicio();
 }
 
-function iniciarExercicio(){
-  if(exercicioIndex >= treinoAtual.listaDetalhada.length){
-    finalizarTreino();
-    return;
+function tocarExercicio() {
+  if (treinoAtivo.indexAtual >= treinoAtivo.exercicios.length) {
+    return finalizarTreinoAtual();
   }
 
-  const ex = treinoAtual.listaDetalhada[exercicioIndex];
-  tempoRestante = treinoAtual.Repeticoes * 2;
+  const ex = treinoAtivo.exercicios[treinoAtivo.indexAtual];
+  const totalMinutos = parseInt(treinoAtivo.dadosBase.Duracao) || 10;
+  // Divide o tempo total pelo número de exercícios (apenas para ter um cronometro coerente por exercício)
+  const tempoPorExercicio = Math.floor((totalMinutos * 60) / treinoAtivo.exercicios.length);
+  
+  treinoAtivo.tempoRestante = tempoPorExercicio;
+  treinoAtivo.pausado = false;
 
-  const html = `
-    <div class="modal">
-      <div class="modalBox">
-
-        <img src="${ex.GifLink}" style="width:200px">
-        <h2>${ex.Exercício}</h2>
-        <h3 id="timerEx">${tempoRestante}</h3>
-
-        <button onclick="pausarTimer()">Pausa</button>
-        <button onclick="pularExercicio()">Pular</button>
-
-      </div>
-    </div>
-  `;
-
-  document.body.insertAdjacentHTML("beforeend", html);
-
-  timer = setInterval(()=>{
-    tempoRestante--;
-    timerEx.textContent = tempoRestante;
-
-    if(tempoRestante<=0){
-      clearInterval(timer);
-      descanso();
-    }
-  },1000);
+  renderPlayer(
+    ex.Exercício, 
+    ex.GifLink || "https://via.placeholder.com/300x200.png?text=Sem+GIF", 
+    treinoAtivo.dadosBase.Repeticoes,
+    false
+  );
+  
+  iniciarTimerPlayer(() => telaDescanso());
 }
 
-function pausarTimer(){
-  clearInterval(timer);
-}
+function telaDescanso() {
+  treinoAtivo.tempoRestante = parseInt(treinoAtivo.dadosBase.Descanso) || 30;
+  treinoAtivo.pausado = false;
 
-function pularExercicio(){
-  clearInterval(timer);
-  exercicioIndex++;
-  fecharModal();
-  iniciarExercicio();
-}
-
-function descanso(){
-  fecharModal();
-
-  tempoRestante = treinoAtual.Descanso;
-
-  const html = `
-    <div class="modal">
-      <div class="modalBox">
-        <h2>Repouse um pouco, guerreiro shounen</h2>
-        <h3 id="timerDesc">${tempoRestante}</h3>
-      </div>
-    </div>
-  `;
-
-  document.body.insertAdjacentHTML("beforeend", html);
-
-  timer = setInterval(()=>{
-    tempoRestante--;
-    timerDesc.textContent = tempoRestante;
-
-    if(tempoRestante<=0){
-      clearInterval(timer);
-      exercicioIndex++;
-      fecharModal();
-      iniciarExercicio();
-    }
-  },1000);
-}
-
-async function finalizarTreino(){
-  fecharModal();
-
-  await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"finalizarTreino",
-      usuario: usuarioLogado.Usuario,
-      qtdExercicios: treinoAtual.listaDetalhada.length
-    })
+  renderPlayer("Repouse um pouco, guerreiro shounen", "", "-", true);
+  
+  iniciarTimerPlayer(() => {
+    treinoAtivo.indexAtual++;
+    tocarExercicio();
   });
+}
 
-  alert("Muito bem, shounen. Seu treinamento de hoje foi muito bom!");
-  carregarHome();
+function renderPlayer(titulo, gifLink, reps, isDescanso) {
+  const html = `
+    <div class="modal-overlay" id="modalPlayer">
+      <div class="modal-box" style="text-align:center;">
+        <h2>${titulo}</h2>
+        ${!isDescanso && gifLink ? `<img src="${gifLink}" class="player-gif">` : ''}
+        ${!isDescanso ? `<p>Repetições: <strong>${reps}</strong></p>` : ''}
+        
+        <div id="playerTimer" class="timer-display">${treinoAtivo.tempoRestante}s</div>
+        
+        <div class="player-controls">
+          <button id="btnPause" onclick="togglePausePlayer()" style="background:#475569;">Pausa</button>
+          <button onclick="pularEtapaPlayer()">Pular</button>
+        </div>
+        <button onclick="fecharModal('modalPlayer')" style="background:transparent; color:#fb7185; margin-top:20px;">Abortar Missão</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("modalContainer").innerHTML = html;
+}
+
+function iniciarTimerPlayer(onFinish) {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (treinoAtivo.pausado) return;
+    
+    treinoAtivo.tempoRestante--;
+    const display = document.getElementById("playerTimer");
+    if(display) display.textContent = treinoAtivo.tempoRestante + "s";
+
+    if (treinoAtivo.tempoRestante <= 0) {
+      clearInterval(timerInterval);
+      onFinish();
+    }
+  }, 1000);
+}
+
+function togglePausePlayer() {
+  treinoAtivo.pausado = !treinoAtivo.pausado;
+  document.getElementById("btnPause").textContent = treinoAtivo.pausado ? "Retomar" : "Pausa";
+}
+
+function pularEtapaPlayer() {
+  clearInterval(timerInterval);
+  // Se está numa tela de descanso (sem gif), pula para o proximo exercicio. 
+  // Se está num exercicio, pula para o descanso dele.
+  const isDescanso = document.getElementById("modalPlayer").innerHTML.includes("Repouse");
+  if (isDescanso) {
+    treinoAtivo.indexAtual++;
+    tocarExercicio();
+  } else {
+    telaDescanso();
+  }
+}
+
+function finalizarTreinoAtual() {
+  fecharModal("modalPlayer");
+  
+  // Aqui, no futuro, faremos a chamada para salvar XP, Aura, Conquistas, etc.
+  
+  const modalHtml = `
+    <div class="modal-overlay" id="modalFim">
+      <div class="modal-box" style="text-align:center;">
+        <h2 style="color:#34d399; font-size:32px;">Treino Concluído!</h2>
+        <p style="font-size:18px;">Muito bem, shounen. Seu treinamento de hoje foi muito bom, continue assim e um dia será invencível!</p>
+        <button onclick="fecharModal('modalFim')" style="margin-top:20px;">Voltar ao QG</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("modalContainer").innerHTML = modalHtml;
+}
+
+function abrirPerfil() {
+  alert("A aba Minha Conta será o nosso próximo passo, guerreiro!");
 }
