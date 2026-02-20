@@ -120,6 +120,53 @@ function sair() {
   window.location.href = "index.html";
 }
 
+function abrirConta() {
+  trocarTela("perfilScreen");
+  atualizarDadosTelaPerfil();
+}
+
+function atualizarDadosTelaPerfil() {
+  const u = usuarioLogado;
+  
+  // Avatar
+  const pAvatar = document.getElementById("perfilAvatar");
+  if(u.Icone) pAvatar.innerHTML = `<img src="${u.Icone}">`;
+  else pAvatar.textContent = u.Usuario[0].toUpperCase();
+
+  // Dados Básicos
+  document.getElementById("perfilOfensiva").textContent = u.Ofensiva || 0;
+  document.getElementById("txtRank").textContent = u.Rank;
+  document.getElementById("txtXP").textContent = u.XP;
+  document.getElementById("txtLevel").textContent = u.Level;
+  document.getElementById("txtAura").textContent = u.Aura;
+
+  // Barras (Exemplo de cálculo simples de progresso)
+  document.getElementById("barXP").style.width = Math.min(100, (u.XP / 1000) * 100) + "%";
+  document.getElementById("barAura").style.width = Math.min(100, (u.Aura / 100) * 100) + "%";
+
+  // Inputs
+  document.getElementById("editUser").value = u.Usuario;
+  document.getElementById("editSenha").value = u.Senha;
+  document.getElementById("editPeso").value = u.Peso;
+  document.getElementById("editAltura").value = u.Altura;
+  document.getElementById("editGenero").value = u.Genero;
+  document.getElementById("editObjetivo").value = u.Objetivo;
+  document.getElementById("editRivalNome").value = u.Rival || "";
+
+  // Conquistas
+  const box = document.getElementById("conquistasBox");
+  box.innerHTML = (u.Conquistas || "").split(",").map(c => c ? `<span class="badge">🏅 ${c}</span>` : "").join("");
+}
+
+async function salvarDadosPerfil() {
+  showLoading(true);
+  // Aqui você deve criar uma nova "action" no code.gs chamada "atualizarPerfil" 
+  // que de um update na linha do usuário com os valores dos inputs acima.
+  // ... lógica de fetch similar ao registrar ...
+  showLoading(false);
+  alert("Dados atualizados, shounen!");
+}
+
 async function editarAvatar(){
 
   showLoading(true);
