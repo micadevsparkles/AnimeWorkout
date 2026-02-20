@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbznfN7uex1NJbrax4ZDInddstyaQFAqFqvS3SHJVm8_dzyWz2iklaA1_JC4ba2vIgQJ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyQC7-NUwpmVS8VjUq07ZMkvffwzu6KijK5EUOM1ZBxYkyvL6TjKzKNmF8u2CZxlG8Z/exec";
 
 let usuarioLogado = null;
 let treinoAtual = null;
