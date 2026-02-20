@@ -128,31 +128,67 @@ async function abrirConta(){
 
   usuarioLogado = data.user;
 
+  /* ===== CALCULOS ===== */
+
+  const xp = Number(usuarioLogado.XP || 0);
+  const aura = Number(usuarioLogado.Aura || 0);
+
+  const xpNext = 60000; // base visual por enquanto
+  const xpPerc = Math.min(100,(xp/xpNext)*100);
+
+  const auraPerc = Math.min(100,(aura/2700)*100);
+
+  const conquistas = usuarioLogado.Conquistas
+    ? usuarioLogado.Conquistas.split(",")
+    : [];
+
+  /* ===== HTML ===== */
+
   const html = `
     <div class="modal">
       <div class="modalBox modalScroll">
 
         <h2>👤 Minha Conta</h2>
 
-        <div style="text-align:center;margin:15px 0;">
+        <div style="text-align:center;margin:10px 0;">
           ${
             usuarioLogado.Icone
               ? `<img src="${usuarioLogado.Icone}" class="avatarGrande">`
               : `<div class="avatarGrande">${usuarioLogado.Usuario[0]}</div>`
           }
+          <button class="btnEdit" onclick="editarAvatar()">Editar avatar</button>
         </div>
 
-        <h3>Painel do Guerreiro</h3>
+        <h3>⚔️ Painel do Guerreiro</h3>
 
-        <p><b>Rank:</b> ${usuarioLogado.Rank}</p>
-        <p><b>Level:</b> ${usuarioLogado.Level}</p>
-        <p><b>XP:</b> ${usuarioLogado.XP}</p>
-        <p><b>Aura:</b> ${usuarioLogado.Aura}</p>
+        <div class="progressBox">
+          <div class="progressLabel">
+            Rank — XP ${xp}
+          </div>
+          <div class="progressBar">
+            <div class="progressFill xpBar" style="width:${xpPerc}%"></div>
+          </div>
+        </div>
+
+        <div class="progressBox">
+          <div class="progressLabel">
+            Level — Aura ${aura}
+          </div>
+          <div class="progressBar">
+            <div class="progressFill auraBar" style="width:${auraPerc}%"></div>
+          </div>
+        </div>
+
+        <p><b>${usuarioLogado.Rank}</b></p>
         <p>🔥 Ofensiva: ${usuarioLogado.Ofensiva || 0} dias</p>
 
-        <h3>⚔️ Conquistas</h3>
-        <div>
-          ${(usuarioLogado.Conquistas || "Nenhuma ainda")}
+        <h3>🏆 Conquistas</h3>
+        <div class="badges">
+          ${
+            conquistas.length
+              ? conquistas.map(c=>`<div class="badge">${c}</div>`).join("")
+              : "Nenhuma ainda"
+          }
         </div>
 
         <button onclick="fecharModal()">Fechar</button>
@@ -163,7 +199,54 @@ async function abrirConta(){
 
   document.body.insertAdjacentHTML("beforeend", html);
 }
+async function editarAvatar(){
 
+  showLoading(true);
+
+  const res = await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({action:"listarAvatares"})
+  });
+
+  const data = await res.json();
+  showLoading(false);
+
+  const imgs = data.lista.map(url=>`
+    <img src="${url}" class="avatarPick"
+      onclick="selecionarAvatar('${url}')">
+  `).join("");
+
+  const html = `
+    <div class="modal">
+      <div class="modalBox modalScroll">
+        <h3>Escolha seu avatar</h3>
+        <div class="avatarGrid">${imgs}</div>
+        <button onclick="fecharModal()">Fechar</button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
+
+async function selecionarAvatar(url){
+
+  showLoading(true);
+
+  await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"salvarAvatar",
+      usuario: usuarioLogado.Usuario,
+      url
+    })
+  });
+
+  showLoading(false);
+  fecharModal();
+  fecharModal();
+  iniciarHome();
+}
 /* ================= RENDER TREINOS ================= */
 
 function renderTreinos(lista){
