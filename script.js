@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzIdvoEYBjdW47F3wRTsq5SNoAcmYqfDZtfJEYr0MkvAoPYFAZ5tClg1GbihlBMt6pW/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbznfN7uex1NJbrax4ZDInddstyaQFAqFqvS3SHJVm8_dzyWz2iklaA1_JC4ba2vIgQJ/exec";
 
 let usuarioLogado = null;
 let treinoAtual = null;
@@ -108,6 +108,60 @@ async function carregarHome(){
   showLoading(false);
 
   renderTreinos(data.meusTreinos);
+}
+
+async function abrirConta(){
+
+  showLoading(true);
+
+  const res = await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"login",
+      usuario: usuarioLogado.Usuario,
+      senha: usuarioLogado.Senha
+    })
+  });
+
+  const data = await res.json();
+  showLoading(false);
+
+  usuarioLogado = data.user;
+
+  const html = `
+    <div class="modal">
+      <div class="modalBox modalScroll">
+
+        <h2>👤 Minha Conta</h2>
+
+        <div style="text-align:center;margin:15px 0;">
+          ${
+            usuarioLogado.Icone
+              ? `<img src="${usuarioLogado.Icone}" class="avatarGrande">`
+              : `<div class="avatarGrande">${usuarioLogado.Usuario[0]}</div>`
+          }
+        </div>
+
+        <h3>Painel do Guerreiro</h3>
+
+        <p><b>Rank:</b> ${usuarioLogado.Rank}</p>
+        <p><b>Level:</b> ${usuarioLogado.Level}</p>
+        <p><b>XP:</b> ${usuarioLogado.XP}</p>
+        <p><b>Aura:</b> ${usuarioLogado.Aura}</p>
+        <p>🔥 Ofensiva: ${usuarioLogado.Ofensiva || 0} dias</p>
+
+        <h3>⚔️ Conquistas</h3>
+        <div>
+          ${(usuarioLogado.Conquistas || "Nenhuma ainda")}
+        </div>
+
+        <button onclick="fecharModal()">Fechar</button>
+
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
 }
 
 /* ================= RENDER TREINOS ================= */
