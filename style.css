@@ -263,3 +263,15 @@ button{
   cursor:pointer;
   margin-top:8px;
 }
+
+.avatarGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.avatarPick{
+  width:100%;
+  border-radius:10px;
+  cursor:pointer;
+}
