@@ -179,3 +179,87 @@ button{
   font-weight:bold;
   margin:auto;
 }
+
+/* ===== BARRAS RPG ===== */
+
+.progressBox{
+  margin:12px 0;
+}
+
+.progressLabel{
+  font-size:12px;
+  margin-bottom:4px;
+}
+
+.progressBar{
+  width:100%;
+  height:14px;
+  background:#0004;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.progressFill{
+  height:100%;
+  width:0%;
+  transition:width .6s ease;
+}
+
+.xpBar{
+  background:linear-gradient(90deg,#00e5ff,#0077ff);
+}
+
+.auraBar{
+  background:linear-gradient(90deg,#ff7a18,#ffb347);
+}
+
+/* ===== BADGES ===== */
+
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+
+.badge{
+  background:#ff7a18;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:bold;
+}
+
+/* ===== AVATAR HEADER ===== */
+
+#avatarCircle{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ff7a18,#ffd200);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  cursor:pointer;
+  overflow:hidden;
+}
+
+#avatarCircle img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* ===== BOTÃO EDITAR ===== */
+
+.btnEdit{
+  background:#ff7a18;
+  border:none;
+  padding:8px 14px;
+  border-radius:10px;
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:8px;
+}
