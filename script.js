@@ -22,34 +22,27 @@ function mostrarLogin(){ trocarTela("loginScreen"); }
 
 /* ================= LOGIN ================= */
 
-async function login(){
-  const usuario = loginUsuario.value.trim();
-  const senha = loginSenha.value.trim();
+function entrar() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const senha = document.getElementById("loginSenha").value.trim();
 
-  showLoading(true);
+  const usuarios = obterUsuarios();
 
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({action:"login",usuario,senha})
-  });
+  const usuario = usuarios.find(
+    u => u.email === email && u.senha === senha
+  );
 
-  const data = await res.json();
-  showLoading(false);
-
-  if(!data.existe){
-    loginMsg.textContent = "Usuário não existe.";
+  if (!usuario) {
+    alert("E-mail ou senha inválidos!");
     return;
   }
 
-  if(!data.senhaCorreta){
-    loginMsg.textContent = "Senha incorreta.";
-    return;
-  }
+  // salvar sessão
+  localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
 
-  usuarioLogado = data.user;
-  iniciarHome();
+  // ir para home
+  window.location.href = "home.html";
 }
-
 /* ================= CADASTRO ================= */
 
 async function registrar(){
@@ -75,6 +68,17 @@ async function registrar(){
   cadMsg.textContent = "Usuário registrado com sucesso, faça login";
 
   setTimeout(()=>mostrarLogin(),1500);
+}
+
+// ===============================
+// BANCO LOCAL DE USUÁRIOS
+// ===============================
+function obterUsuarios() {
+  return JSON.parse(localStorage.getItem("usuarios")) || [];
+}
+
+function salvarUsuarios(lista) {
+  localStorage.setItem("usuarios", JSON.stringify(lista));
 }
 
 /* ================= HOME ================= */
@@ -110,95 +114,69 @@ async function carregarHome(){
   renderTreinos(data.meusTreinos);
 }
 
-async function abrirConta(){
+function abrirConta() {
+  const nome = document.getElementById("cadastroNome").value.trim();
+  const email = document.getElementById("cadastroEmail").value.trim();
+  const senha = document.getElementById("cadastroSenha").value.trim();
 
-  showLoading(true);
+  if (!nome || !email || !senha) {
+    alert("Preencha todos os campos!");
+    return;
+  }
 
-  const res = await fetch(API_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"login",
-      usuario: usuarioLogado.Usuario,
-      senha: usuarioLogado.Senha
-    })
-  });
+  const usuarios = obterUsuarios();
 
-  const data = await res.json();
-  showLoading(false);
+  // verificar se já existe
+  const existe = usuarios.find(u => u.email === email);
+  if (existe) {
+    alert("Este e-mail já está cadastrado!");
+    return;
+  }
 
-  usuarioLogado = data.user;
+  const novoUsuario = {
+    nome,
+    email,
+    senha,
+    saldo: 0,
+    avatar: "img/avatar-padrao.png"
+  };
 
-  /* ===== CALCULOS ===== */
+  usuarios.push(novoUsuario);
+  salvarUsuarios(usuarios);
 
-  const xp = Number(usuarioLogado.XP || 0);
-  const aura = Number(usuarioLogado.Aura || 0);
+  alert("Conta criada com sucesso!");
 
-  const xpNext = 60000; // base visual por enquanto
-  const xpPerc = Math.min(100,(xp/xpNext)*100);
-
-  const auraPerc = Math.min(100,(aura/2700)*100);
-
-  const conquistas = usuarioLogado.Conquistas
-    ? usuarioLogado.Conquistas.split(",")
-    : [];
-
-  /* ===== HTML ===== */
-
-  const html = `
-    <div class="modal">
-      <div class="modalBox modalScroll">
-
-        <h2>👤 Minha Conta</h2>
-
-        <div style="text-align:center;margin:10px 0;">
-          ${
-            usuarioLogado.Icone
-              ? `<img src="${usuarioLogado.Icone}" class="avatarGrande">`
-              : `<div class="avatarGrande">${usuarioLogado.Usuario[0]}</div>`
-          }
-          <button class="btnEdit" onclick="editarAvatar()">Editar avatar</button>
-        </div>
-
-        <h3>⚔️ Painel do Guerreiro</h3>
-
-        <div class="progressBox">
-          <div class="progressLabel">
-            Rank — XP ${xp}
-          </div>
-          <div class="progressBar">
-            <div class="progressFill xpBar" style="width:${xpPerc}%"></div>
-          </div>
-        </div>
-
-        <div class="progressBox">
-          <div class="progressLabel">
-            Level — Aura ${aura}
-          </div>
-          <div class="progressBar">
-            <div class="progressFill auraBar" style="width:${auraPerc}%"></div>
-          </div>
-        </div>
-
-        <p><b>${usuarioLogado.Rank}</b></p>
-        <p>🔥 Ofensiva: ${usuarioLogado.Ofensiva || 0} dias</p>
-
-        <h3>🏆 Conquistas</h3>
-        <div class="badges">
-          ${
-            conquistas.length
-              ? conquistas.map(c=>`<div class="badge">${c}</div>`).join("")
-              : "Nenhuma ainda"
-          }
-        </div>
-
-        <button onclick="fecharModal()">Fechar</button>
-
-      </div>
-    </div>
-  `;
-
-  document.body.insertAdjacentHTML("beforeend", html);
+  // opcional: limpar campos
+  document.getElementById("cadastroNome").value = "";
+  document.getElementById("cadastroEmail").value = "";
+  document.getElementById("cadastroSenha").value = "";
 }
+
+function carregarUsuario() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+  if (!usuario) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  document.getElementById("nomeUsuario").textContent = usuario.nome;
+  document.getElementById("saldoUsuario").textContent =
+    "R$ " + usuario.saldo.toFixed(2);
+
+  const avatar = document.getElementById("avatarUsuario");
+  if (avatar) {
+    avatar.src = usuario.avatar;
+  }
+}
+
+window.addEventListener("load", carregarUsuario);
+
+function sair() {
+  localStorage.removeItem("usuarioLogado");
+  window.location.href = "index.html";
+}
+
 async function editarAvatar(){
 
   showLoading(true);
