@@ -1,4 +1,4 @@
-const API_URL = "COLE_AQUI_SUA_URL_DO_WEB_APP";
+const API_URL = "https://script.google.com/macros/s/AKfycbzHZhXqYFB2JJDKEVRS_fkdiqYEKbKi1YUuabVt4qvvnrIHrZfhIIplwaiOwcm3qEqi/exec";
 
 let userLogado = null;
 let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
@@ -322,23 +322,142 @@ function pularEtapaPlayer() {
   }
 }
 
-function finalizarTreinoAtual() {
+/* ================= RPG: FINALIZAR TREINO ================= */
+async function finalizarTreinoAtual() {
   fecharModal("modalPlayer");
+  showLoading(true);
   
-  // Aqui, no futuro, faremos a chamada para salvar XP, Aura, Conquistas, etc.
+  const qtdEx = treinoAtivo.exercicios.length;
+  const res = await apiCall({ action: "finalizarTreino", usuario: userLogado.Usuario, qtdExercicios: qtdEx });
+  
+  showLoading(false);
   
   const modalHtml = `
     <div class="modal-overlay" id="modalFim">
-      <div class="modal-box" style="text-align:center;">
-        <h2 style="color:#34d399; font-size:32px;">Treino Concluído!</h2>
-        <p style="font-size:18px;">Muito bem, shounen. Seu treinamento de hoje foi muito bom, continue assim e um dia será invencível!</p>
-        <button onclick="fecharModal('modalFim')" style="margin-top:20px;">Voltar ao QG</button>
+      <div class="modal-box" style="text-align:center; border: 2px solid #fb923c;">
+        <h2 style="color:#34d399; font-size:28px;">🔥 TREINO CONCLUÍDO!</h2>
+        <p style="font-size:16px;">Muito bem, shounen. Seu treinamento de hoje foi muito bom!</p>
+        <div style="background:#0f172a; padding:15px; border-radius:8px; margin:20px 0;">
+          <p style="color:#34d399; font-weight:bold;">+ ${qtdEx} XP Base</p>
+          <p style="color:#c084fc; font-weight:bold;">+ ${qtdEx * 3} Aura Base</p>
+          <p style="font-size:12px; color:#94a3b8;">(Bônus de ofensiva aplicados em seu perfil)</p>
+        </div>
+        <button onclick="fecharModal('modalFim'); iniciarHome();">Voltar ao QG</button>
       </div>
     </div>
   `;
   document.getElementById("modalContainer").innerHTML = modalHtml;
 }
 
-function abrirPerfil() {
-  alert("A aba Minha Conta será o nosso próximo passo, guerreiro!");
+/* ================= PERFIL E AVATAR ================= */
+async function abrirPerfil() {
+  trocarTela("perfilScreen");
+  showLoading(true);
+  const res = await apiCall({ action: "carregarPerfil", usuario: userLogado.Usuario });
+  showLoading(false);
+
+  if (res.sucesso) {
+    userLogado = res.user; // Atualiza dados locais
+    renderizarPerfil(res.user, res.rival);
+  }
+}
+
+function renderizarPerfil(u, rival) {
+  // Avatar e Básicos
+  const avatarBox = document.getElementById("perfilAvatarBox");
+  avatarBox.innerHTML = u.Icone ? `<img src="${u.Icone}">` : u.Usuario.charAt(0).toUpperCase();
+  document.getElementById("perfilOfensiva").textContent = u.Ofensiva || 0;
+  
+  // XP e Rank
+  document.getElementById("perfilRankStr").textContent = u.Rank;
+  let nextXP = u.Rank.includes("Rank E") ? 1000 : u.Rank.includes("Rank D") ? 3000 : u.Rank.includes("Rank C") ? 7000 : u.Rank.includes("Rank B") ? 15000 : u.Rank.includes("Rank A") ? 30000 : u.Rank.includes("Rank S -") ? 60000 : 100000;
+  let pctXP = Math.min(100, (Number(u.XP) / nextXP) * 100);
+  document.getElementById("barXP").style.width = pctXP + "%";
+  document.getElementById("txtXP").textContent = `${u.XP} / ${nextXP} XP`;
+
+  // Aura e Level
+  document.getElementById("perfilLevelStr").textContent = "Level " + u.Level;
+  let nextAura = 2700; // Simplificado para mostrar a barra baseada no máximo
+  let pctAura = Math.min(100, (Number(u.Aura) / nextAura) * 100);
+  document.getElementById("barAura").style.width = pctAura + "%";
+  document.getElementById("txtAura").textContent = `${u.Aura} Aura`;
+
+  // Conquistas
+  const conqBox = document.getElementById("perfilConquistas");
+  const arrayConq = (u.Conquistas || "").split(",").filter(c=>c);
+  conqBox.innerHTML = arrayConq.length > 0 ? arrayConq.map(c => `<span class="conquista-badge">🏅 ${c}</span>`).join("") : "<p style='color:#94a3b8; font-size:12px;'>Ainda não há conquistas.</p>";
+
+  // Inputs Editáveis
+  document.getElementById("editUser").value = u.Usuario;
+  document.getElementById("editSenha").value = u.Senha;
+  document.getElementById("editPeso").value = u.Peso;
+  document.getElementById("editAltura").value = u.Altura;
+  document.getElementById("editGenero").value = u.Genero;
+  document.getElementById("editObjetivo").value = u.Objetivo;
+  document.getElementById("editRival").value = u.Rival || "";
+
+  // Rival
+  document.getElementById("nomeRivalStr").textContent = u.Rival || "Nenhum";
+  if (rival) {
+    document.getElementById("rivalStats").innerHTML = `
+      <p style="font-size:14px;"><strong>${rival.Rank}</strong> | Lvl ${rival.Level}</p>
+      <p style="font-size:12px;">🔥 Ofensiva: ${rival.Ofensiva} | 🏅 Conquistas: ${(rival.Conquistas || "").split(",").filter(c=>c).length}</p>
+    `;
+  } else {
+    document.getElementById("rivalStats").innerHTML = "Defina um rival válido para comparar o poder de luta!";
+  }
+}
+
+async function salvarPerfil() {
+  const dados = {
+    action: "atualizarPerfil",
+    usuario: userLogado.Usuario,
+    senha: document.getElementById("editSenha").value,
+    peso: document.getElementById("editPeso").value,
+    altura: document.getElementById("editAltura").value,
+    genero: document.getElementById("editGenero").value,
+    objetivo: document.getElementById("editObjetivo").value,
+    rival: document.getElementById("editRival").value
+  };
+
+  showLoading(true);
+  await apiCall(dados);
+  showLoading(false);
+  alert("Atributos atualizados!");
+  abrirPerfil(); // Recarrega
+}
+
+/* ================= TROCAR AVATAR ================= */
+async function abrirModalAvatar() {
+  showLoading(true);
+  const res = await apiCall({ action: "listarAvatares" });
+  showLoading(false);
+
+  if (!res.sucesso) return alert("Erro ao carregar avatares.");
+
+  const gridHtml = res.lista.map(link => `
+    <img src="${link.trim()}" style="width:70px; height:70px; border-radius:50%; cursor:pointer; border:2px solid transparent;" 
+         onclick="selecionarNovoAvatar('${link.trim()}')">
+  `).join("");
+
+  const modalHtml = `
+    <div class="modal-overlay" id="modalAvatar">
+      <div class="modal-box">
+        <h2>Escolha sua Forma</h2>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px;">
+          ${gridHtml}
+        </div>
+        <button onclick="fecharModal('modalAvatar')" style="background:transparent; border:1px solid #94a3b8; margin-top:20px;">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("modalContainer").innerHTML = modalHtml;
+}
+
+async function selecionarNovoAvatar(url) {
+  fecharModal("modalAvatar");
+  showLoading(true);
+  await apiCall({ action: "atualizarPerfil", usuario: userLogado.Usuario, icone: url });
+  showLoading(false);
+  abrirPerfil();
 }
