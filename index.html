@@ -70,6 +70,77 @@
     </div>
   </section>
 
+  <section id="perfilScreen" class="screen">
+    <header class="header">
+      <button onclick="iniciarHome()" style="width:auto; padding:5px 10px;">⬅</button>
+      <h2>Status do Guerreiro</h2>
+    </header>
+
+    <div class="faixa" style="text-align:center;">
+      <div id="perfilAvatarBox" class="perfil-avatar"></div>
+      <button class="btn-edit-avatar" onclick="abrirModalAvatar()">Trocar Avatar</button>
+      
+      <div class="ofensiva-box">
+        🔥 <span id="perfilOfensiva">0</span> Dias
+      </div>
+    </div>
+
+    <div class="faixa">
+      <h3>📊 Painel do Guerreiro</h3>
+      <p style="margin:5px 0; font-size:14px; color:#fb923c;" id="perfilRankStr">Rank E</p>
+      <div class="rpg-bar-container">
+        <div id="barXP" class="rpg-bar-fill bar-xp" style="width:0%;"></div>
+        <div id="txtXP" class="rpg-bar-text">0 XP</div>
+      </div>
+
+      <p style="margin:15px 0 5px 0; font-size:14px; color:#c084fc;" id="perfilLevelStr">Level 1</p>
+      <div class="rpg-bar-container">
+        <div id="barAura" class="rpg-bar-fill bar-aura" style="width:0%;"></div>
+        <div id="txtAura" class="rpg-bar-text">0 Aura</div>
+      </div>
+    </div>
+
+    <div class="faixa rival-box">
+      <h3 style="color:#ef4444;">⚔️ Rival: <span id="nomeRivalStr">Nenhum</span></h3>
+      <div id="rivalStats">Defina um rival para comparar o poder de luta!</div>
+    </div>
+
+    <div class="faixa">
+      <h3>🏆 Conquistas</h3>
+      <div id="perfilConquistas"></div>
+    </div>
+
+    <div class="faixa">
+      <h3>⚙️ Modificar Atributos</h3>
+      <label style="font-size:12px; color:#94a3b8;">Usuário</label>
+      <input id="editUser" disabled style="background:#0f172a;">
+      <label style="font-size:12px; color:#94a3b8;">Senha</label>
+      <input id="editSenha" type="password">
+      
+      <div class="grid-inputs">
+        <div>
+          <label style="font-size:12px; color:#94a3b8;">Peso (kg)</label>
+          <input id="editPeso" type="number">
+        </div>
+        <div>
+          <label style="font-size:12px; color:#94a3b8;">Altura (cm)</label>
+          <input id="editAltura" type="number">
+        </div>
+      </div>
+
+      <select id="editGenero">
+        <option>Masculino</option><option>Feminino</option><option>Outro</option>
+      </select>
+      <select id="editObjetivo">
+        <option>Emagrecer</option><option>Aumentar força</option><option>Aumentar massa muscular</option>
+      </select>
+      <label style="font-size:12px; color:#94a3b8;">Nome do Rival</label>
+      <input id="editRival" placeholder="Usuário exato do rival">
+
+      <button onclick="salvarPerfil()">Atualizar Dados</button>
+    </div>
+  </section>
+  
   <div id="modalContainer"></div>
 
   <script src="script.js"></script>
