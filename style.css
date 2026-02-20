@@ -121,3 +121,48 @@ button{
   padding:6px 12px;
   margin-bottom:10px;
 }
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#000a;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+
+.modalBox{
+  background:#141a3a;
+  padding:20px;
+  border-radius:16px;
+  width:90%;
+  max-width:420px;
+}
+
+.modalScroll{
+  max-height:85vh;
+  overflow-y:auto;
+}
+
+.listaExercicios{
+  max-height:220px;
+  overflow-y:auto;
+  background:#0003;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+.checkItem{
+  display:block;
+  margin:4px 0;
+}
+
+.cardTreino{
+  background:#0003;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+  cursor:pointer;
+}
