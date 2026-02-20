@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzHZhXqYFB2JJDKEVRS_fkdiqYEKbKi1YUuabVt4qvvnrIHrZfhIIplwaiOwcm3qEqi/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw9zGmEEAf0GmHH1fE25M0m_Pckr89iwwYxkGtT8XcjEEemLe-Z5E0P63YqcaLX-L_E/exec";
 
 let userLogado = null;
 let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
