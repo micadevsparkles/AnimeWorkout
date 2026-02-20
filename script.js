@@ -1,8 +1,12 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzSrH34fEhupCcVRpqHKNWv76brXzASJap4QN4Xa_a2ksQfnp_wwvHfRxX0rHdVGjFm/exec";
 
 let usuarioLogado = null;
+let treinoAtual = null;
+let exercicioIndex = 0;
+let timer = null;
+let tempoRestante = 0;
 
-/* ========= UI ========= */
+/* ================= UI ================= */
 
 function showLoading(v){
   document.getElementById("loading").classList.toggle("hidden", !v);
@@ -16,7 +20,7 @@ function trocarTela(id){
 function mostrarCadastro(){ trocarTela("cadastroScreen"); }
 function mostrarLogin(){ trocarTela("loginScreen"); }
 
-/* ========= LOGIN ========= */
+/* ================= LOGIN ================= */
 
 async function login(){
   const usuario = loginUsuario.value.trim();
@@ -26,11 +30,7 @@ async function login(){
 
   const res = await fetch(API_URL,{
     method:"POST",
-    body:JSON.stringify({
-      action:"login",
-      usuario,
-      senha
-    })
+    body:JSON.stringify({action:"login",usuario,senha})
   });
 
   const data = await res.json();
@@ -50,25 +50,23 @@ async function login(){
   iniciarHome();
 }
 
-/* ========= CADASTRO ========= */
+/* ================= CADASTRO ================= */
 
 async function registrar(){
   showLoading(true);
 
-  const payload = {
-    action:"registrar",
-    usuario: cadUsuario.value,
-    senha: cadSenha.value,
-    peso: cadPeso.value,
-    altura: cadAltura.value,
-    idade: cadIdade.value,
-    genero: cadGenero.value,
-    objetivo: cadObjetivo.value
-  };
-
   const res = await fetch(API_URL,{
     method:"POST",
-    body:JSON.stringify(payload)
+    body:JSON.stringify({
+      action:"registrar",
+      usuario: cadUsuario.value,
+      senha: cadSenha.value,
+      peso: cadPeso.value,
+      altura: cadAltura.value,
+      idade: cadIdade.value,
+      genero: cadGenero.value,
+      objetivo: cadObjetivo.value
+    })
   });
 
   await res.json();
@@ -76,19 +74,16 @@ async function registrar(){
 
   cadMsg.textContent = "Usuário registrado com sucesso, faça login";
 
-  setTimeout(()=>{
-    mostrarLogin();
-  },1500);
+  setTimeout(()=>mostrarLogin(),1500);
 }
 
-/* ========= HOME ========= */
+/* ================= HOME ================= */
 
 function iniciarHome(){
   trocarTela("homeScreen");
 
   welcomeUser.textContent = "Bem-vindo, " + usuarioLogado.Usuario;
 
-  // avatar
   if(usuarioLogado.Icone){
     avatarCircle.innerHTML = `<img src="${usuarioLogado.Icone}">`;
   }else{
@@ -104,7 +99,7 @@ async function carregarHome(){
   const res = await fetch(API_URL,{
     method:"POST",
     body:JSON.stringify({
-      action:"carregarHome",
+      action:"listarTreinos",
       usuario: usuarioLogado.Usuario
     })
   });
@@ -112,17 +107,241 @@ async function carregarHome(){
   const data = await res.json();
   showLoading(false);
 
-  missaoBox.textContent = data.missao || "Nenhuma missão hoje.";
-  padraoBox.textContent = data.padrao || "Nenhum treino padrão.";
-  meusTreinosBox.textContent = data.meus || "Nenhum treino ainda.";
+  renderTreinos(data.meusTreinos);
 }
 
-/* ========= PLACEHOLDERS FUTUROS ========= */
+/* ================= RENDER TREINOS ================= */
 
-function abrirConta(){
-  alert("Tela Minha Conta — ETAPA 2");
+function renderTreinos(lista){
+  if(!lista || lista.length===0){
+    meusTreinosBox.innerHTML = "Nenhum treino ainda.";
+    return;
+  }
+
+  meusTreinosBox.innerHTML = lista.map(t=>`
+    <div class="cardTreino" onclick='abrirTreino(${JSON.stringify(t)})'>
+      ⚡ ${t.NomeTreino}
+    </div>
+  `).join("");
 }
 
-function abrirNovoTreino(){
-  alert("Criar treino — ETAPA 2");
+/* ================= NOVO TREINO ================= */
+
+async function abrirNovoTreino(){
+  showLoading(true);
+
+  const res = await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({action:"listarExercicios"})
+  });
+
+  const data = await res.json();
+  showLoading(false);
+
+  const lista = data.exercicios.map(e=>`
+    <label>
+      <input type="checkbox" value="${e.Exercício}">
+      ${e.Exercício}
+    </label>
+  `).join("");
+
+  const html = `
+    <div class="modal">
+      <div class="modalBox">
+
+        <h3>Novo Treinamento</h3>
+
+        <input id="novoNome" placeholder="Nome do Treino">
+
+        <input id="buscaEx" placeholder="Buscar exercício">
+
+        <div id="listaEx">${lista}</div>
+
+        <input id="novoDescanso" placeholder="Descanso (seg)">
+        <input id="novoReps" placeholder="Repetições">
+        <input id="novoDuracao" placeholder="Duração total (min)">
+
+        <button onclick="salvarTreino()">Salvar</button>
+        <button onclick="fecharModal()">Cancelar</button>
+
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
+
+/* ================= SALVAR TREINO ================= */
+
+async function salvarTreino(){
+
+  const checks = [...document.querySelectorAll("#listaEx input:checked")];
+  const exercicios = checks.map(c=>c.value).join(",");
+
+  showLoading(true);
+
+  await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"salvarTreino",
+      usuario: usuarioLogado.Usuario,
+      nome: novoNome.value,
+      exercicios,
+      descanso: novoDescanso.value,
+      repeticoes: novoReps.value,
+      duracao: novoDuracao.value
+    })
+  });
+
+  showLoading(false);
+  fecharModal();
+  carregarHome();
+}
+
+/* ================= MODAL ================= */
+
+function fecharModal(){
+  document.querySelector(".modal")?.remove();
+}
+
+/* ================= ABRIR TREINO ================= */
+
+function abrirTreino(treino){
+  treinoAtual = treino;
+  exercicioIndex = 0;
+
+  const lista = treino.Exercicios.split(",")
+    .map(e=>`<li>${e}</li>`).join("");
+
+  const html = `
+    <div class="modal">
+      <div class="modalBox">
+
+        <h2>${treino.NomeTreino}</h2>
+        <p>Duração: ${treino.Duracao} min</p>
+        <p>Repetições: ${treino.Repeticoes}</p>
+        <p>Descanso: ${treino.Descanso}s</p>
+
+        <button onclick="modoEvolucao()">🚀 Modo evolução</button>
+
+        <ul>${lista}</ul>
+
+        <button onclick="fecharModal()">Fechar</button>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+}
+
+/* ================= MODO EVOLUÇÃO ================= */
+
+async function modoEvolucao(){
+  fecharModal();
+
+  const res = await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"detalharExercicios",
+      nomes: treinoAtual.Exercicios
+    })
+  });
+
+  const data = await res.json();
+  treinoAtual.listaDetalhada = data.lista;
+
+  iniciarExercicio();
+}
+
+function iniciarExercicio(){
+  if(exercicioIndex >= treinoAtual.listaDetalhada.length){
+    finalizarTreino();
+    return;
+  }
+
+  const ex = treinoAtual.listaDetalhada[exercicioIndex];
+  tempoRestante = treinoAtual.Repeticoes * 2;
+
+  const html = `
+    <div class="modal">
+      <div class="modalBox">
+
+        <img src="${ex.GifLink}" style="width:200px">
+        <h2>${ex.Exercício}</h2>
+        <h3 id="timerEx">${tempoRestante}</h3>
+
+        <button onclick="pausarTimer()">Pausa</button>
+        <button onclick="pularExercicio()">Pular</button>
+
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+
+  timer = setInterval(()=>{
+    tempoRestante--;
+    timerEx.textContent = tempoRestante;
+
+    if(tempoRestante<=0){
+      clearInterval(timer);
+      descanso();
+    }
+  },1000);
+}
+
+function pausarTimer(){
+  clearInterval(timer);
+}
+
+function pularExercicio(){
+  clearInterval(timer);
+  exercicioIndex++;
+  fecharModal();
+  iniciarExercicio();
+}
+
+function descanso(){
+  fecharModal();
+
+  tempoRestante = treinoAtual.Descanso;
+
+  const html = `
+    <div class="modal">
+      <div class="modalBox">
+        <h2>Repouse um pouco, guerreiro shounen</h2>
+        <h3 id="timerDesc">${tempoRestante}</h3>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+
+  timer = setInterval(()=>{
+    tempoRestante--;
+    timerDesc.textContent = tempoRestante;
+
+    if(tempoRestante<=0){
+      clearInterval(timer);
+      exercicioIndex++;
+      fecharModal();
+      iniciarExercicio();
+    }
+  },1000);
+}
+
+async function finalizarTreino(){
+  fecharModal();
+
+  await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify({
+      action:"finalizarTreino",
+      usuario: usuarioLogado.Usuario,
+      qtdExercicios: treinoAtual.listaDetalhada.length
+    })
+  });
+
+  alert("Muito bem, shounen. Seu treinamento de hoje foi muito bom!");
+  carregarHome();
 }
