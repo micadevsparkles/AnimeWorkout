@@ -88,6 +88,64 @@
 
 </section>
 
+  <section id="perfilScreen" class="screen">
+  <button onclick="trocarTela('homeScreen')" class="plusBtn">← Voltar</button>
+  
+  <div class="faixa" style="text-align:center;">
+    <div id="perfilAvatar" class="avatarGrande"></div>
+    <button class="btnEdit" onclick="editarAvatar()">Editar Foto</button>
+    
+    <div class="ofensivaFogo">
+      <span>🔥</span>
+      <span id="perfilOfensiva">0</span>
+    </div>
+  </div>
+
+  <div class="faixa">
+    <h3>📊 Painel do Guerreiro</h3>
+    <div class="progressBox">
+      <div class="progressLabel">Rank: <span id="txtRank">E</span> (<span id="txtXP">0</span> XP)</div>
+      <div class="progressBar"><div id="barXP" class="progressFill xpBar"></div></div>
+    </div>
+    <div class="progressBox">
+      <div class="progressLabel">Aura / Level: <span id="txtLevel">1</span> (<span id="txtAura">0</span> Aura)</div>
+      <div class="progressBar"><div id="barAura" class="progressFill auraBar"></div></div>
+    </div>
+  </div>
+
+  <div class="faixa">
+    <h3>🏆 Conquistas</h3>
+    <div id="conquistasBox" class="badges"></div>
+  </div>
+
+  <div class="faixa">
+    <h3>⚔️ Rival</h3>
+    <div id="rivalBox">Nenhum rival definido</div>
+  </div>
+
+  <div class="faixa">
+    <h3>⚙️ Dados do Usuário</h3>
+    <label>Usuário: <input id="editUser" disabled></label>
+    <label>Senha: <input id="editSenha" type="password"></label>
+    <label>Peso: <input id="editPeso"></label>
+    <label>Altura: <input id="editAltura"></label>
+    <label>Gênero: 
+      <select id="editGenero">
+        <option>Masculino</option><option>Feminino</option><option>Outro</option>
+      </select>
+    </label>
+    <label>Objetivo:
+      <select id="editObjetivo">
+        <option>Emagrecer</option>
+        <option>Aumentar força</option>
+        <option>Aumentar massa muscular</option>
+      </select>
+    </label>
+    <label>Rival (Nome): <input id="editRivalNome"></label>
+    <button onclick="salvarDadosPerfil()">Atualizar Dados</button>
+  </div>
+</section>
+
 <script src="script.js"></script>
 </body>
 </html>
