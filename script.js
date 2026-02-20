@@ -22,27 +22,30 @@ function mostrarLogin(){ trocarTela("loginScreen"); }
 
 /* ================= LOGIN ================= */
 
-function entrar() {
-  const email = document.getElementById("loginEmail").value.trim();
-  const senha = document.getElementById("loginSenha").value.trim();
+async function login() {
+  showLoading(true);
 
-  const usuarios = obterUsuarios();
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      usuario: document.getElementById("loginUsuario").value,
+      senha: document.getElementById("loginSenha").value
+    })
+  });
 
-  const usuario = usuarios.find(
-    u => u.email === email && u.senha === senha
-  );
+  const data = await res.json();
+  showLoading(false);
 
-  if (!usuario) {
-    alert("E-mail ou senha inválidos!");
+  if (!data.existe || !data.senhaCorreta) {
+    document.getElementById("loginMsg").textContent = "Usuário ou senha inválidos!";
     return;
   }
 
-  // salvar sessão
-  localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
-
-  // ir para home
-  window.location.href = "home.html";
+  usuarioLogado = data.user;
+  iniciarHome();
 }
+
 /* ================= CADASTRO ================= */
 
 async function registrar(){
@@ -70,15 +73,12 @@ async function registrar(){
   setTimeout(()=>mostrarLogin(),1500);
 }
 
-// ===============================
-// BANCO LOCAL DE USUÁRIOS
-// ===============================
-function obterUsuarios() {
-  return JSON.parse(localStorage.getItem("usuarios")) || [];
-}
-
-function salvarUsuarios(lista) {
-  localStorage.setItem("usuarios", JSON.stringify(lista));
+function sair() {
+  usuarioLogado = null;
+  document.getElementById("loginUsuario").value = "";
+  document.getElementById("loginSenha").value = "";
+  document.getElementById("loginMsg").textContent = "";
+  trocarTela("loginScreen");
 }
 
 /* ================= HOME ================= */
@@ -114,63 +114,6 @@ async function carregarHome(){
   renderTreinos(data.meusTreinos);
 }
 
-function abrirConta() {
-  const nome = document.getElementById("cadastroNome").value.trim();
-  const email = document.getElementById("cadastroEmail").value.trim();
-  const senha = document.getElementById("cadastroSenha").value.trim();
-
-  if (!nome || !email || !senha) {
-    alert("Preencha todos os campos!");
-    return;
-  }
-
-  const usuarios = obterUsuarios();
-
-  // verificar se já existe
-  const existe = usuarios.find(u => u.email === email);
-  if (existe) {
-    alert("Este e-mail já está cadastrado!");
-    return;
-  }
-
-  const novoUsuario = {
-    nome,
-    email,
-    senha,
-    saldo: 0,
-    avatar: "img/avatar-padrao.png"
-  };
-
-  usuarios.push(novoUsuario);
-  salvarUsuarios(usuarios);
-
-  alert("Conta criada com sucesso!");
-
-  // opcional: limpar campos
-  document.getElementById("cadastroNome").value = "";
-  document.getElementById("cadastroEmail").value = "";
-  document.getElementById("cadastroSenha").value = "";
-}
-
-function carregarUsuario() {
-  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-
-  if (!usuario) {
-    window.location.href = "index.html";
-    return;
-  }
-
-  document.getElementById("nomeUsuario").textContent = usuario.nome;
-  document.getElementById("saldoUsuario").textContent =
-    "R$ " + usuario.saldo.toFixed(2);
-
-  const avatar = document.getElementById("avatarUsuario");
-  if (avatar) {
-    avatar.src = usuario.avatar;
-  }
-}
-
-window.addEventListener("load", carregarUsuario);
 
 function sair() {
   localStorage.removeItem("usuarioLogado");
