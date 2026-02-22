@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzp5hSXlsSWfIvEBD3icI_lYNjz6HRlGJBLXipFAVO71M9a8klMxlSneWbLfft1oyM/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyvAmwVmYkPzltLw8z9sLaikVAFOvbulx-JKDM7Oz0Gc_ok-5VbgOu5Z_1yrmolcev3/exec";
 
 let userLogado = null;
 let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
@@ -101,45 +101,72 @@ function renderizarTreinos(containerId, lista) {
   }
 
   container.innerHTML = lista.map(t => {
-    const titulo = t.NomeTreino || t.Missao; // NomeTreino ou MissaoDiaria
-    // Transforma o objeto em string para passar na função onclick
+    const titulo = t.NomeTreino || t.Missao;
+    const isMeuTreino = containerId === "boxMeusTreinos";
+
     return `
-      <div class="card-treino" onclick='abrirDetalhesTreino(${JSON.stringify(t)})'>
-        <h4>${titulo}</h4>
-        <p>⏱️ ${t.Duracao}min | 🔁 ${t.Repeticoes} repetições | ⏸️ ${t.Descanso ? t.Descanso+'s' : 'N/A'}</p>
+      <div class="card-treino" style="position:relative;">
+        <div onclick='abrirDetalhesTreino(${JSON.stringify(t)})' style="width:80%">
+          <h4>${titulo}</h4>
+          <p>⏱️ ${t.Duracao}min | 🔁 ${t.Repeticoes} rep | ⏸️ ${t.Descanso ? t.Descanso+'s' : '30s'}</p>
+        </div>
+        ${isMeuTreino ? `
+          <div style="position:absolute; right:10px; top:12px; display:flex; gap:10px; font-size:18px;">
+            <span onclick='abrirCriacaoTreino(${JSON.stringify(t)})' style="cursor:pointer">📝</span>
+            <span onclick='deletarTreino("${titulo}")' style="cursor:pointer">🗑️</span>
+          </div>
+        ` : ''}
       </div>
     `;
   }).join("");
 }
 
-/* ================= CRIAÇÃO DE TREINO ================= */
-async function abrirCriacaoTreino() {
+async function deletarTreino(nomeTreino) {
+  if (!confirm(`Deseja destruir o treino "${nomeTreino}" permanentemente?`)) return;
+  
+  showLoading(true);
+  const res = await apiCall({ 
+    action: "excluirTreino", 
+    usuario: userLogado.Usuario, 
+    nomeTreino: nomeTreino 
+  });
+  showLoading(false);
+
+  if (res.sucesso) iniciarHome();
+  else alert("Erro ao excluir!");
+}
+/* ================= CRIAÇÃO E EDIÇÃO DE TREINO ================= */
+async function abrirCriacaoTreino(treinoParaEditar = null) {
   showLoading(true);
   const res = await apiCall({ action: "listarExercicios" });
   showLoading(false);
 
   if(res.sucesso) exerciciosDB = res.exercicios;
 
+  const selecionados = treinoParaEditar ? treinoParaEditar.Exercicios.split(",").map(e => e.trim()) : [];
+
   const htmlLista = exerciciosDB.map(ex => `
     <label class="ex-item">
-      <input type="checkbox" value="${ex.Exercício}"> ${ex.Exercício}
+      <input type="checkbox" value="${ex.Exercício}" ${selecionados.includes(ex.Exercício) ? 'checked' : ''}> ${ex.Exercício}
     </label>
   `).join("");
 
   const modalHtml = `
     <div class="modal-overlay" id="modalCriacao">
       <div class="modal-box">
-        <h2>Criar Treinamento Solo</h2>
-        <input id="novoNome" placeholder="Nome do Treinamento">
+        <h2>${treinoParaEditar ? 'Editar' : 'Criar'} Treinamento</h2>
+        <input id="novoNome" placeholder="Nome do Treinamento" value="${treinoParaEditar ? (treinoParaEditar.NomeTreino || '') : ''}">
         <input id="buscaEx" placeholder="Buscar técnica..." oninput="filtrarEx()">
         <div class="lista-ex-container" id="listaExercicios">${htmlLista}</div>
         <div style="display:flex; gap:10px;">
-          <input id="novoDescanso" type="number" placeholder="Descanso (segundos)">
-          <input id="novoReps" type="number" placeholder="Repetições">
+          <input id="novoDescanso" type="number" placeholder="Descanso (s)" value="${treinoParaEditar ? treinoParaEditar.Descanso : ''}">
+          <input id="novoReps" type="number" placeholder="Reps" value="${treinoParaEditar ? treinoParaEditar.Repeticoes : ''}">
         </div>
-        <input id="novoDuracao" type="number" placeholder="Tempo Total Estimado (min)">
+        <input id="novoDuracao" type="number" placeholder="Tempo Total (min)" value="${treinoParaEditar ? treinoParaEditar.Duracao : ''}">
         
-        <button onclick="salvarNovoTreino()">Salvar Treino</button>
+        <button onclick='salvarNovoTreino(${treinoParaEditar ? JSON.stringify(treinoParaEditar) : 'null'})'>
+          ${treinoParaEditar ? 'Atualizar Treino' : 'Salvar Treino'}
+        </button>
         <button onclick="fecharModal('modalCriacao')" style="background:transparent; border:1px solid #94a3b8;">Cancelar</button>
       </div>
     </div>
@@ -154,16 +181,17 @@ function filtrarEx() {
   });
 }
 
-async function salvarNovoTreino() {
+async function salvarNovoTreino(treinoOriginal = null) {
   const checks = Array.from(document.querySelectorAll("#listaExercicios input:checked"));
-  if (checks.length === 0) return alert("Selecione ao menos 1 técnica!");
+  if (checks.length === 0) return alert("Selecione técnicas!");
   
   const nome = document.getElementById("novoNome").value;
-  if(!nome) return alert("Dê um nome ao treinamento!");
+  if(!nome) return alert("Nome obrigatório!");
 
-  const treino = {
-    action: "salvarTreino",
+  const payload = {
+    action: treinoOriginal ? "editarTreino" : "salvarTreino",
     usuario: userLogado.Usuario,
+    nomeAntigo: treinoOriginal ? (treinoOriginal.NomeTreino || treinoOriginal.Missao) : null,
     nome: nome,
     exercicios: checks.map(c => c.value).join(","),
     descanso: document.getElementById("novoDescanso").value || 30,
@@ -172,13 +200,12 @@ async function salvarNovoTreino() {
   };
 
   showLoading(true);
-  await apiCall(treino);
+  await apiCall(payload);
   showLoading(false);
 
   fecharModal("modalCriacao");
-  iniciarHome(); // Recarrega a home para mostrar o novo treino
+  iniciarHome();
 }
-
 /* ================= DETALHES DO TREINO ================= */
 function fecharModal(id) {
   const el = document.getElementById(id);
