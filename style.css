@@ -76,3 +76,26 @@ button:active { transform: scale(0.98); }
 .card-treino:hover {
   transform: translateX(5px);
 }
+
+.loading-retro-container { width: 80%; text-align: center; }
+.loading-text { 
+  font-family: 'Courier New', Courier, monospace; 
+  color: #fb923c; 
+  text-shadow: 2px 2px #000;
+  letter-spacing: 3px;
+  animation: blink 0.8s infinite;
+}
+.loading-bar { 
+  border: 4px solid #f8fafc; 
+  padding: 4px; 
+  background: #000;
+  box-shadow: 0 0 15px #f97316;
+}
+.loading-fill { 
+  height: 20px; 
+  background: #f97316; 
+  width: 0%; 
+  animation: fillBar 2s infinite ease-in-out;
+}
+@keyframes fillBar { 0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
