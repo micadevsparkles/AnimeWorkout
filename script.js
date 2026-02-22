@@ -1,9 +1,9 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyvAmwVmYkPzltLw8z9sLaikVAFOvbulx-JKDM7Oz0Gc_ok-5VbgOu5Z_1yrmolcev3/exec";
 
 const sons = {
-  inicio: new Audio("https://exemplo.com/trombeta.mp3"),
-  descanso: new Audio("https://exemplo.com/prato_chines.mp3"),
-  abortar: new Audio("https://exemplo.com/multidao_uhhh.mp3")
+  inicio: new Audio("https://github.com/micadevsparkles/AnimeWorkout/blob/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/trombeta.mp3"),
+  descanso: new Audio("https://github.com/micadevsparkles/AnimeWorkout/blob/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/pause.mp3"),
+  abortar: new Audio("https://github.com/micadevsparkles/AnimeWorkout/blob/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/abortmission.mp3")
 };
 
 function tocarSom(nome) {
