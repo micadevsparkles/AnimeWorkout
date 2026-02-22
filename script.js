@@ -1,5 +1,16 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyvAmwVmYkPzltLw8z9sLaikVAFOvbulx-JKDM7Oz0Gc_ok-5VbgOu5Z_1yrmolcev3/exec";
 
+const sons = {
+  inicio: new Audio("https://exemplo.com/trombeta.mp3"),
+  descanso: new Audio("https://exemplo.com/prato_chines.mp3"),
+  abortar: new Audio("https://exemplo.com/multidao_uhhh.mp3")
+};
+
+function tocarSom(nome) {
+  sons[nome].currentTime = 0;
+  sons[nome].play().catch(e => console.log("Áudio bloqueado pelo navegador"));
+}
+
 let userLogado = null;
 let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
 let treinoAtivo = null; // Armazena o treino que está rodando
@@ -113,27 +124,39 @@ function renderizarTreinos(containerId, lista) {
         ${isMeuTreino ? `
           <div style="position:absolute; right:10px; top:12px; display:flex; gap:10px; font-size:18px;">
             <span onclick='abrirCriacaoTreino(${JSON.stringify(t)})' style="cursor:pointer">📝</span>
-            <span onclick='deletarTreino("${titulo}")' style="cursor:pointer">🗑️</span>
+            <span onclick='deletarTreino("${titulo}", this)' style="cursor:pointer">🗑️</span>
           </div>
         ` : ''}
       </div>
     `;
   }).join("");
 }
-
-async function deletarTreino(nomeTreino) {
-  if (!confirm(`Deseja destruir o treino "${nomeTreino}" permanentemente?`)) return;
+async function deletarTreino(nomeTreino, elementoBotao) {
+  if (!confirm(`Deseja destruir o treino "${nomeTreino}"?`)) return;
   
-  showLoading(true);
-  const res = await apiCall({ 
-    action: "excluirTreino", 
-    usuario: userLogado.Usuario, 
-    nomeTreino: nomeTreino 
-  });
-  showLoading(false);
+  // O elementoBotao é o <span>🗑️</span>. O closest('.card-treino') acha o div pai dele.
+  const card = elementoBotao.closest('.card-treino');
+  if (card) {
+    card.classList.add('smoke-out'); // Ativa a animação de fumaça ninja
+  }
 
-  if (res.sucesso) iniciarHome();
-  else alert("Erro ao excluir!");
+  // Espera 500ms (tempo da animação) antes de sumir com tudo e recarregar
+  setTimeout(async () => {
+    showLoading(true);
+    const res = await apiCall({ 
+      action: "excluirTreino", 
+      usuario: userLogado.Usuario, 
+      nomeTreino: nomeTreino 
+    });
+    showLoading(false);
+    
+    if (res.sucesso) {
+      iniciarHome();
+    } else {
+      alert("Erro ao excluir o treino da planilha.");
+      iniciarHome(); // Recarrega para remover a classe de fumaça se deu erro
+    }
+  }, 500);
 }
 /* ================= CRIAÇÃO E EDIÇÃO DE TREINO ================= */
 async function abrirCriacaoTreino(treinoParaEditar = null) {
@@ -208,6 +231,9 @@ async function salvarNovoTreino(treinoOriginal = null) {
 }
 /* ================= DETALHES DO TREINO ================= */
 function fecharModal(id) {
+  if(id === 'modalPlayer' && treinoAtivo) {
+    tocarSom('abortar'); // Som de Multidão
+  }
   const el = document.getElementById(id);
   if(el) el.remove();
   clearInterval(timerInterval); // Para timers se existirem
@@ -239,6 +265,7 @@ function abrirDetalhesTreino(treino) {
 
 /* ================= MODO EVOLUÇÃO (PLAYER) ================= */
 async function iniciarModoEvolucao(treino) {
+  tocarSom('inicio'); // Som de Trombeta
   showLoading(true);
   // Busca os gifs e detalhes dos exercícios lá do sheets
   const res = await apiCall({ action: "detalharTreino", exerciciosStr: treino.Exercicios });
@@ -283,6 +310,7 @@ function tocarExercicio() {
 }
 
 function telaDescanso() {
+  tocarSom('descanso'); // Som de Prato Chinês
   treinoAtivo.tempoRestante = parseInt(treinoAtivo.dadosBase.Descanso) || 30;
   treinoAtivo.pausado = false;
 
