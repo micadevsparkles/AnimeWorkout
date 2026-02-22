@@ -11,6 +11,63 @@ function tocarSom(nome) {
   sons[nome].play().catch(e => console.log("Áudio bloqueado pelo navegador"));
 }
 
+// SISTEMA DE PARTÍCULAS DE MAGIA
+function criarEfeitoMagico() {
+    // Cria o canvas se não existir
+    let canvas = document.getElementById('particleCanvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'particleCanvas';
+      document.body.appendChild(canvas);
+    }
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    // XP (Amarelo/Dourado) e Aura (Azul/Roxo)
+    const cores = ['#fb923c', '#facc15', '#38bdf8', '#8b5cf6']; 
+
+    for (let i = 0; i < 100; i++) {
+        particles.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: (Math.random() - 0.5) * 15,
+            vy: (Math.random() - 0.5) * 15,
+            size: Math.random() * 5 + 2,
+            color: cores[Math.floor(Math.random() * cores.length)],
+            alpha: 1
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((p, i) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= 0.01;
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            if (p.alpha <= 0) particles.splice(i, 1);
+        });
+        if (particles.length > 0) requestAnimationFrame(animate);
+        else canvas.remove();
+    }
+    animate();
+}
+
+function dispararLevelUp() {
+    criarEfeitoMagico();
+    const overlay = document.createElement('div');
+    overlay.className = 'level-up-overlay';
+    overlay.innerHTML = `<h1 class="level-up-text">LEVEL UP!</h1>`;
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.remove(), 2000);
+}
+
 let userLogado = null;
 let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
 let treinoAtivo = null; // Armazena o treino que está rodando
@@ -386,7 +443,17 @@ async function finalizarTreinoAtual() {
   const res = await apiCall({ action: "finalizarTreino", usuario: userLogado.Usuario, qtdExercicios: qtdEx });
   
   showLoading(false);
-  
+  if (res.sucesso) {
+        // VERIFICA SE O LEVEL SUBIU
+        if (res.level > userLogado.Level) {
+            dispararLevelUp();
+            tocarSom('inicio'); // Reaproveita a trombeta ou use um som de 'Shine'
+        }
+        
+        userLogado.Level = res.level; // Atualiza o dado local
+        fecharModal('modalPlayer');
+        iniciarHome();
+    }
   const modalHtml = `
     <div class="modal-overlay" id="modalFim">
       <div class="modal-box" style="text-align:center; border: 2px solid #fb923c;">
