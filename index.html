@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shounen Training</title>
+  <title>Anime Workout</title>
   <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjqAsDzWK5BVq2CpKFdvZng4oIdWzefn8wBw&s">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div id="loading" class="loading hidden">
-    <div class="spinner"></div>
-    <p>Canalizando energia...</p>
+  <div class="loading-retro-container">
+    <p class="loading-text">FARMANDO AURA...</p>
+    <div class="loading-bar">
+      <div class="loading-fill"></div>
+    </div>
   </div>
+</div>
 
   <section id="loginScreen" class="screen active">
-    <h1 class="title">⚔️ Shounen Training</h1>
+    <h1 class="title">ANIME WORKOUT</h1>
     <input id="logUser" placeholder="Usuário">
     <input id="logSenha" type="password" placeholder="Senha">
     <button onclick="fazerLogin()">Entrar</button>
