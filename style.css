@@ -110,3 +110,38 @@ button:active { transform: scale(0.98); }
   30% { transform: scale(1.1); filter: blur(5px); opacity: 0.8; background: #94a3b8; }
   100% { transform: scale(1.5); filter: blur(20px); opacity: 0; }
 }
+
+.level-up-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, rgba(0,0,0,0) 70%);
+}
+
+.level-up-text {
+    font-size: 60px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 20px #fb923c, 0 0 40px #f97316;
+    animation: levelUpPop 1.5s ease-out forwards;
+    font-family: 'Arial Black', sans-serif;
+}
+
+@keyframes levelUpPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    20% { transform: scale(1.2); opacity: 1; }
+    80% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.1); opacity: 0; filter: blur(10px); }
+}
+
+#particleCanvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+}
