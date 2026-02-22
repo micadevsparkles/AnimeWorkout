@@ -65,3 +65,14 @@ button:active { transform: scale(0.98); }
 
 .rival-box { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px dashed #ef4444; }
 .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Adicione ao final do seu style.css */
+.card-treino {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: transform 0.2s;
+}
+.card-treino:hover {
+  transform: translateX(5px);
+}
