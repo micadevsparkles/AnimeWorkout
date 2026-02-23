@@ -1,19 +1,38 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbyvAmwVmYkPzltLw8z9sLaikVAFOvbulx-JKDM7Oz0Gc_ok-5VbgOu5Z_1yrmolcev3/exec";
 
-const sons = {
-  inicio: new Audio("https://github.com/micadevsparkles/AnimeWorkout/blob/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/trombeta.mp3"),
-  descanso: new Audio("https://github.com/micadevsparkles/AnimeWorkout/blob/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/pause.mp3"),
-  abortar: new Audio("https://github.com/micadevsparkles/AnimeWorkout/blob/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/abortmission.mp3")
-};
+// --- SISTEMA DE AUDIO (CORRIGIDO PARA LINKS DIRETOS) ---
+const sons = {};
 
-function tocarSom(nome) {
-  sons[nome].currentTime = 0;
-  sons[nome].play().catch(e => console.log("Áudio bloqueado pelo navegador"));
+function carregarSons() {
+  const links = {
+    inicio: "https://raw.githubusercontent.com/micadevsparkles/AnimeWorkout/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/trombeta.mp3",
+    descanso: "https://raw.githubusercontent.com/micadevsparkles/AnimeWorkout/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/pause.mp3",
+    abortar: "https://raw.githubusercontent.com/micadevsparkles/AnimeWorkout/ccaa4f0a6eedea1b4f99bf27554bcc974b5d7ac5/assets/sounds/abortmission.mp3"
+  };
+
+  for (let chave in links) {
+    try {
+      sons[chave] = new Audio(links[chave]);
+    } catch (e) {
+      console.log("Erro ao carregar som: " + chave);
+    }
+  }
 }
 
-// SISTEMA DE PARTÍCULAS DE MAGIA
+function tocarSom(nome) {
+  try {
+    if (sons[nome]) {
+      sons[nome].currentTime = 0;
+      sons[nome].play().catch(e => console.log("Áudio aguardando interação."));
+    }
+  } catch (e) { console.log("Falha ao tocar som."); }
+}
+
+// Inicializa os sons
+carregarSons();
+
+// --- SISTEMA DE PARTÍCULAS DE MAGIA ---
 function criarEfeitoMagico() {
-    // Cria o canvas se não existir
     let canvas = document.getElementById('particleCanvas');
     if (!canvas) {
       canvas = document.createElement('canvas');
@@ -25,7 +44,6 @@ function criarEfeitoMagico() {
     canvas.height = window.innerHeight;
 
     const particles = [];
-    // XP (Amarelo/Dourado) e Aura (Azul/Roxo)
     const cores = ['#fb923c', '#facc15', '#38bdf8', '#8b5cf6']; 
 
     for (let i = 0; i < 100; i++) {
@@ -69,8 +87,8 @@ function dispararLevelUp() {
 }
 
 let userLogado = null;
-let exerciciosDB = []; // Salva a lista de exercícios para pesquisa
-let treinoAtivo = null; // Armazena o treino que está rodando
+let exerciciosDB = []; 
+let treinoAtivo = null; 
 let timerInterval = null;
 
 /* ================= UTILS ================= */
@@ -97,15 +115,21 @@ async function fazerLogin() {
   if (!user || !senha) return msg.textContent = "Preencha tudo!";
   
   showLoading(true);
-  const res = await apiCall({ action: "login", usuario: user, senha: senha });
-  showLoading(false);
-
-  if (!res.sucesso) {
-    msg.textContent = res.msg;
-  } else {
-    userLogado = res.user;
-    msg.textContent = "";
-    iniciarHome();
+  try {
+    const res = await apiCall({ action: "login", usuario: user, senha: senha });
+    if (!res.sucesso) {
+      msg.textContent = res.msg;
+      showLoading(false);
+    } else {
+      userLogado = res.user;
+      msg.textContent = "";
+      await iniciarHome();
+      showLoading(false);
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Erro de conexão.";
+    showLoading(false);
   }
 }
 
@@ -142,7 +166,6 @@ async function fazerCadastro() {
 async function iniciarHome() {
   trocarTela("homeScreen");
   
-  // Renderiza Avatar
   const avatar = document.getElementById("avatarHome");
   if (userLogado.Icone) {
     avatar.innerHTML = `<img src="${userLogado.Icone}">`;
@@ -188,16 +211,15 @@ function renderizarTreinos(containerId, lista) {
     `;
   }).join("");
 }
+
 async function deletarTreino(nomeTreino, elementoBotao) {
   if (!confirm(`Deseja destruir o treino "${nomeTreino}"?`)) return;
   
-  // O elementoBotao é o <span>🗑️</span>. O closest('.card-treino') acha o div pai dele.
   const card = elementoBotao.closest('.card-treino');
   if (card) {
-    card.classList.add('smoke-out'); // Ativa a animação de fumaça ninja
+    card.classList.add('smoke-out'); 
   }
 
-  // Espera 500ms (tempo da animação) antes de sumir com tudo e recarregar
   setTimeout(async () => {
     showLoading(true);
     const res = await apiCall({ 
@@ -211,10 +233,11 @@ async function deletarTreino(nomeTreino, elementoBotao) {
       iniciarHome();
     } else {
       alert("Erro ao excluir o treino da planilha.");
-      iniciarHome(); // Recarrega para remover a classe de fumaça se deu erro
+      iniciarHome(); 
     }
   }, 500);
 }
+
 /* ================= CRIAÇÃO E EDIÇÃO DE TREINO ================= */
 async function abrirCriacaoTreino(treinoParaEditar = null) {
   showLoading(true);
@@ -286,14 +309,15 @@ async function salvarNovoTreino(treinoOriginal = null) {
   fecharModal("modalCriacao");
   iniciarHome();
 }
+
 /* ================= DETALHES DO TREINO ================= */
 function fecharModal(id) {
   if(id === 'modalPlayer' && treinoAtivo) {
-    tocarSom('abortar'); // Som de Multidão
+    tocarSom('abortar'); 
   }
   const el = document.getElementById(id);
   if(el) el.remove();
-  clearInterval(timerInterval); // Para timers se existirem
+  clearInterval(timerInterval);
 }
 
 function abrirDetalhesTreino(treino) {
@@ -322,9 +346,8 @@ function abrirDetalhesTreino(treino) {
 
 /* ================= MODO EVOLUÇÃO (PLAYER) ================= */
 async function iniciarModoEvolucao(treino) {
-  tocarSom('inicio'); // Som de Trombeta
+  tocarSom('inicio');
   showLoading(true);
-  // Busca os gifs e detalhes dos exercícios lá do sheets
   const res = await apiCall({ action: "detalharTreino", exerciciosStr: treino.Exercicios });
   showLoading(false);
 
@@ -350,7 +373,6 @@ function tocarExercicio() {
 
   const ex = treinoAtivo.exercicios[treinoAtivo.indexAtual];
   const totalMinutos = parseInt(treinoAtivo.dadosBase.Duracao) || 10;
-  // Divide o tempo total pelo número de exercícios (apenas para ter um cronometro coerente por exercício)
   const tempoPorExercicio = Math.floor((totalMinutos * 60) / treinoAtivo.exercicios.length);
   
   treinoAtivo.tempoRestante = tempoPorExercicio;
@@ -367,7 +389,7 @@ function tocarExercicio() {
 }
 
 function telaDescanso() {
-  tocarSom('descanso'); // Som de Prato Chinês
+  tocarSom('descanso');
   treinoAtivo.tempoRestante = parseInt(treinoAtivo.dadosBase.Descanso) || 30;
   treinoAtivo.pausado = false;
 
@@ -423,8 +445,6 @@ function togglePausePlayer() {
 
 function pularEtapaPlayer() {
   clearInterval(timerInterval);
-  // Se está numa tela de descanso (sem gif), pula para o proximo exercicio. 
-  // Se está num exercicio, pula para o descanso dele.
   const isDescanso = document.getElementById("modalPlayer").innerHTML.includes("Repouse");
   if (isDescanso) {
     treinoAtivo.indexAtual++;
@@ -436,32 +456,30 @@ function pularEtapaPlayer() {
 
 /* ================= RPG: FINALIZAR TREINO ================= */
 async function finalizarTreinoAtual() {
+  const backupQtd = treinoAtivo.exercicios.length;
   fecharModal("modalPlayer");
   showLoading(true);
   
-  const qtdEx = treinoAtivo.exercicios.length;
-  const res = await apiCall({ action: "finalizarTreino", usuario: userLogado.Usuario, qtdExercicios: qtdEx });
+  const res = await apiCall({ action: "finalizarTreino", usuario: userLogado.Usuario, qtdExercicios: backupQtd });
   
   showLoading(false);
   if (res.sucesso) {
-        // VERIFICA SE O LEVEL SUBIU
         if (res.level > userLogado.Level) {
             dispararLevelUp();
-            tocarSom('inicio'); // Reaproveita a trombeta ou use um som de 'Shine'
+            tocarSom('inicio');
         }
-        
-        userLogado.Level = res.level; // Atualiza o dado local
-        fecharModal('modalPlayer');
+        userLogado.Level = res.level; 
         iniciarHome();
     }
+    
   const modalHtml = `
     <div class="modal-overlay" id="modalFim">
       <div class="modal-box" style="text-align:center; border: 2px solid #fb923c;">
         <h2 style="color:#34d399; font-size:28px;">🔥 TREINO CONCLUÍDO!</h2>
         <p style="font-size:16px;">Muito bem, shounen. Seu treinamento de hoje foi muito bom!</p>
         <div style="background:#0f172a; padding:15px; border-radius:8px; margin:20px 0;">
-          <p style="color:#34d399; font-weight:bold;">+ ${qtdEx} XP Base</p>
-          <p style="color:#c084fc; font-weight:bold;">+ ${qtdEx * 3} Aura Base</p>
+          <p style="color:#34d399; font-weight:bold;">+ ${backupQtd} XP Base</p>
+          <p style="color:#c084fc; font-weight:bold;">+ ${backupQtd * 3} Aura Base</p>
           <p style="font-size:12px; color:#94a3b8;">(Bônus de ofensiva aplicados em seu perfil)</p>
         </div>
         <button onclick="fecharModal('modalFim'); iniciarHome();">Voltar ao QG</button>
@@ -479,37 +497,32 @@ async function abrirPerfil() {
   showLoading(false);
 
   if (res.sucesso) {
-    userLogado = res.user; // Atualiza dados locais
+    userLogado = res.user; 
     renderizarPerfil(res.user, res.rival);
   }
 }
 
 function renderizarPerfil(u, rival) {
-  // Avatar e Básicos
   const avatarBox = document.getElementById("perfilAvatarBox");
   avatarBox.innerHTML = u.Icone ? `<img src="${u.Icone}">` : u.Usuario.charAt(0).toUpperCase();
   document.getElementById("perfilOfensiva").textContent = u.Ofensiva || 0;
   
-  // XP e Rank
   document.getElementById("perfilRankStr").textContent = u.Rank;
   let nextXP = u.Rank.includes("Rank E") ? 1000 : u.Rank.includes("Rank D") ? 3000 : u.Rank.includes("Rank C") ? 7000 : u.Rank.includes("Rank B") ? 15000 : u.Rank.includes("Rank A") ? 30000 : u.Rank.includes("Rank S -") ? 60000 : 100000;
   let pctXP = Math.min(100, (Number(u.XP) / nextXP) * 100);
   document.getElementById("barXP").style.width = pctXP + "%";
   document.getElementById("txtXP").textContent = `${u.XP} / ${nextXP} XP`;
 
-  // Aura e Level
   document.getElementById("perfilLevelStr").textContent = "Level " + u.Level;
-  let nextAura = 2700; // Simplificado para mostrar a barra baseada no máximo
+  let nextAura = 2700; 
   let pctAura = Math.min(100, (Number(u.Aura) / nextAura) * 100);
   document.getElementById("barAura").style.width = pctAura + "%";
   document.getElementById("txtAura").textContent = `${u.Aura} Aura`;
 
-  // Conquistas
   const conqBox = document.getElementById("perfilConquistas");
   const arrayConq = (u.Conquistas || "").split(",").filter(c=>c);
   conqBox.innerHTML = arrayConq.length > 0 ? arrayConq.map(c => `<span class="conquista-badge">🏅 ${c}</span>`).join("") : "<p style='color:#94a3b8; font-size:12px;'>Ainda não há conquistas.</p>";
 
-  // Inputs Editáveis
   document.getElementById("editUser").value = u.Usuario;
   document.getElementById("editSenha").value = u.Senha;
   document.getElementById("editPeso").value = u.Peso;
@@ -518,7 +531,6 @@ function renderizarPerfil(u, rival) {
   document.getElementById("editObjetivo").value = u.Objetivo;
   document.getElementById("editRival").value = u.Rival || "";
 
-  // Rival
   document.getElementById("nomeRivalStr").textContent = u.Rival || "Nenhum";
   if (rival) {
     document.getElementById("rivalStats").innerHTML = `
@@ -546,10 +558,9 @@ async function salvarPerfil() {
   await apiCall(dados);
   showLoading(false);
   alert("Atributos atualizados!");
-  abrirPerfil(); // Recarrega
+  abrirPerfil(); 
 }
 
-/* ================= TROCAR AVATAR ================= */
 async function abrirModalAvatar() {
   showLoading(true);
   const res = await apiCall({ action: "listarAvatares" });
