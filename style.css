@@ -2,51 +2,95 @@
 :root {
   --background: #020617;
   --surface: #0f172a;
-  --primary: #1e40af; /* Azul Escuro */
-  --accent: #3b82f6;  /* Azul Brilhante */
+  --primary: #1e40af;
+  --accent: #3b82f6;
   --text: #f8fafc;
 }
 
-body { background: var(--background); color: var(--text); font-family: sans-serif; margin: 0; }
+body { background: var(--background); color: var(--text); font-family: sans-serif; margin: 0; overflow-x: hidden; }
 .screen { display: none; padding: 20px; max-width: 480px; margin: 0 auto; }
 .screen.active { display: block; }
 
 .faixa { background: var(--surface); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #1e293b; }
-input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; }
-button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; box-sizing: border-box;}
+button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 5px; }
 button:disabled { background: #334155; cursor: not-allowed; }
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.btn-back { width: 50px; background: transparent; font-size: 24px; padding: 0; margin: 0; }
+.link { color: var(--accent); cursor: pointer; display: block; text-align: center; margin-top: 15px; font-size: 14px; text-decoration: underline; }
 
 /* AVATAR CIRCULAR PERFEITO */
 .avatar, .perfil-avatar {
   width: 60px; height: 60px; border-radius: 50%;
   background: var(--primary); display: flex; align-items: center; justify-content: center;
-  overflow: hidden; border: 2px solid var(--accent);
+  overflow: hidden; border: 2px solid var(--accent); cursor: pointer;
 }
-.perfil-avatar { width: 120px; height: 120px; font-size: 40px; }
-.avatar img, .perfil-avatar img {
-  width: 100%; height: 100%; object-fit: cover; object-position: center;
-}
+.perfil-avatar { width: 120px; height: 120px; font-size: 40px; margin: 0 auto; }
+.avatar img, .perfil-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 
-.edit-icon-btn { position: absolute; bottom: 0; right: 0; width: 35px; height: 35px; border-radius: 50%; padding: 0; }
-.btn-plus { width: 40px; height: 40px; border-radius: 50%; padding: 0; font-size: 24px; }
+.edit-icon-btn { position: absolute; bottom: 0; right: 0; width: 35px; height: 35px; border-radius: 50%; padding: 0; display:flex; align-items:center; justify-content:center; background:#1e293b; border:2px solid var(--accent); }
+.btn-plus { width: 40px; height: 40px; border-radius: 50%; padding: 0; font-size: 24px; display:flex; align-items:center; justify-content:center; margin:0;}
+
+.ofensiva-box { margin-top: 15px; font-weight: bold; font-size: 18px; color: #facc15; }
+.grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 /* PROGRESS BARS */
-.rpg-bar-container { background: #000; height: 20px; border-radius: 10px; overflow: hidden; position: relative; }
-.rpg-bar-fill { height: 100%; transition: 0.5s; }
+.rpg-bar-container { background: #000; height: 20px; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid #334155; }
+.rpg-bar-fill { height: 100%; transition: width 0.5s ease-in-out; }
 .bar-xp { background: var(--accent); }
 .bar-aura { background: #a855f7; }
-.rpg-bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; line-height: 20px; font-weight: bold; }
+.rpg-bar-text { position: absolute; width: 100%; top: 0; left: 0; text-align: center; font-size: 12px; line-height: 20px; font-weight: bold; text-shadow: 1px 1px 2px black; }
 
-/* CARDS */
-.card-treino { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 4px solid var(--accent); }
+/* CARDS E LISTAS (Corrigido para não vazar o container) */
+.lista-treinos { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.card-treino { background: #1e293b; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 4px solid var(--accent); transition: transform 0.2s; }
+.card-treino:hover { transform: scale(1.02); }
+.card-treino h4 { margin: 0 0 5px 0; font-size: 16px; }
+.card-treino p { margin: 0; font-size: 12px; color: #94a3b8; }
+.edit-btn { font-size: 18px; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px; }
+
+/* MODALS (O CSS VITAL QUE FALTAVA) */
+.modal-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.9); z-index: 1000; display: flex; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
+.modal-box { background: var(--surface); padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid var(--primary); text-align: center; max-height: 90vh; overflow-y: auto; }
+.modal-box h2 { margin-top: 0; color: var(--accent); }
 
 /* PLAYER */
-.player-gif { width: 100%; border-radius: 10px; margin: 15px 0; background: white; }
-.timer-display { font-size: 50px; font-weight: bold; color: var(--accent); margin: 20px 0; }
+.player-gif { width: 100%; border-radius: 10px; margin: 15px 0; background: white; max-height: 250px; object-fit: contain; }
+.timer-display { font-size: 60px; font-weight: bold; color: var(--accent); margin: 20px 0; text-shadow: 0 0 10px var(--accent); }
 
-.avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; }
-.avatar-opt { width: 100%; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; cursor: pointer; }
+/* SELEÇÃO DE AVATAR */
+.avatar-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0; }
+.avatar-opt { width: 100%; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: 0.3s; }
+.avatar-opt:hover { border-color: var(--accent); transform: scale(1.1); }
 
-/* LOADING */
-.loading { position: fixed; inset: 0; background: var(--background); z-index: 100; display: flex; justify-content: center; align-items: center; }
-.hidden { display: none; }
+/* LOADING & ANIMAÇÃO DE KI/AURA */
+.loading { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.95); z-index: 2000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+.hidden { display: none !important; }
+
+.magic-sphere-container { position: relative; width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+.magic-sphere {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: radial-gradient(circle, #3b82f6, #a855f7, #000);
+  box-shadow: 0 0 20px #3b82f6, 0 0 40px #a855f7;
+  animation: pulseSphere 1.2s infinite alternate;
+  z-index: 2;
+}
+.loading-text { margin-top: 80px; font-weight: bold; color: var(--accent); letter-spacing: 2px; animation: blinkText 1.5s infinite; text-shadow: 0 0 5px var(--accent); }
+
+@keyframes pulseSphere {
+  0% { transform: scale(0.9); box-shadow: 0 0 15px #3b82f6; }
+  100% { transform: scale(1.2); box-shadow: 0 0 35px #a855f7, 0 0 60px #3b82f6; }
+}
+@keyframes blinkText { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Partículas Sugadas */
+.particle { position: absolute; width: 8px; height: 8px; border-radius: 50%; z-index: 1; animation: suckIn 1.5s infinite linear; opacity: 0; }
+.p-blue { background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
+.p-yellow { background: #facc15; box-shadow: 0 0 8px #facc15; }
+
+@keyframes suckIn {
+  0% { transform: scale(1) translate(0, 0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: scale(0.2) translate(calc(50% - var(--tx, 0)), calc(50% - var(--ty, 0))); top: 40%; left: 45%; opacity: 0; }
+}
