@@ -10,9 +10,14 @@
 <body>
 
 <div id="loading" class="loading hidden">
-  <div class="loading-retro-container">
-    <p class="loading-text">RECEBENDO KI...</p>
-    <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="magic-sphere-container">
+    <div class="particle p-blue" style="top: 10%; left: 20%; animation-delay: 0.1s;"></div>
+    <div class="particle p-yellow" style="top: 80%; left: 70%; animation-delay: 0.3s;"></div>
+    <div class="particle p-blue" style="top: 50%; left: 90%; animation-delay: 0.5s;"></div>
+    <div class="particle p-yellow" style="top: 20%; left: 80%; animation-delay: 0.2s;"></div>
+    <div class="particle p-blue" style="top: 70%; left: 10%; animation-delay: 0.4s;"></div>
+    <div class="magic-sphere"></div>
+    <p class="loading-text">ABSORVENDO KI...</p>
   </div>
 </div>
 
@@ -91,12 +96,12 @@
 
   <div class="faixa">
     <h3>📊 Status</h3>
-    <p id="perfilRankStr" style="color:#fb923c; font-weight:bold;"></p>
+    <p id="perfilRankStr" style="color:#fb923c; font-weight:bold; font-size:18px;"></p>
     <div class="rpg-bar-container">
       <div id="barXP" class="rpg-bar-fill bar-xp"></div>
       <div id="txtXP" class="rpg-bar-text"></div>
     </div>
-    <p id="perfilLevelStr" style="margin-top:10px; color:#c084fc;"></p>
+    <p id="perfilLevelStr" style="margin-top:10px; color:#c084fc; font-weight:bold;"></p>
     <div class="rpg-bar-container">
       <div id="barAura" class="rpg-bar-fill bar-aura"></div>
       <div id="txtAura" class="rpg-bar-text"></div>
@@ -112,7 +117,7 @@
   <div class="faixa">
     <h3>⚙️ Editar Dados</h3>
     <input id="editUser" disabled style="opacity:0.6">
-    <input id="editSenha" type="password" placeholder="Senha">
+    <input id="editSenha" type="password" placeholder="Nova Senha (opcional)">
     <div class="grid-inputs">
       <input id="editPeso" type="number" placeholder="Peso (kg)">
       <input id="editAltura" type="number" placeholder="Altura (cm)">
