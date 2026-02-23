@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbzcH9BKFNHaw5Sjv3JejWKJBYHoSqx92d2uQghiitxTC5EFO7c-nxEOZWuSkeWMJkyi/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxdZ8rpiiTr218lFUoHFVyv_OdaN9SqLuapbqJFzZV3ZSOSD1A1Hhb0vUHqug-BAmZB/exec";
 
 // --- SISTEMA DE AUDIO (CORRIGIDO PARA LINKS DIRETOS) ---
 const sons = {};
@@ -101,44 +101,57 @@ function trocarTela(id) {
   document.getElementById(id).classList.add("active");
 }
 
+/* ================= UTILS & CONNECTION ================= */
 async function apiCall(data) {
-  const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(data) });
-  return await res.json();
+  // Adicionamos o modo 'no-cors' se necessário, mas o padrão 'cors' com o 
+  // retorno JSON correto no Google Script é o ideal para ler a resposta.
+  const response = await fetch(API_URL, {
+    method: "POST",
+    mode: "cors", // Garante que o navegador tente ler a resposta
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8", // Evita "pre-flight" que causa erro de conexão
+    },
+    body: JSON.stringify(data)
+  });
+  
+  if (!response.ok) throw new Error("Falha na rede");
+  return await response.json();
 }
 
-/* ================= AUTH ================= */
+/* ================= AUTHENTICATION ================= */
 async function fazerLogin() {
   const user = document.getElementById("logUser").value.trim();
   const senha = document.getElementById("logSenha").value.trim();
   const msg = document.getElementById("logMsg");
 
-  if (!user || !senha) return msg.textContent = "Preencha tudo!";
-  
-  showLoading(true);
-  let res;
-  
-  // Isola a chamada da API para capturar APENAS erros reais de internet/servidor
-  try {
-    res = await apiCall({ action: "login", usuario: user, senha: senha });
-  } catch (err) {
-    console.error("Erro real de conexão:", err);
-    msg.textContent = "Erro de conexão com o servidor.";
-    showLoading(false);
+  if (!user || !senha) {
+    msg.textContent = "Preencha todos os campos, shinobi!";
     return;
   }
+  
+  showLoading(true);
+  
+  try {
+    const res = await apiCall({ 
+      action: "login", 
+      usuario: user, 
+      senha: senha 
+    });
 
-  // Se passou da API, processamos as telas sem cair no Try Catch
-  if (!res.sucesso) {
-    msg.textContent = res.msg;
-    showLoading(false);
-  } else {
-    userLogado = res.user;
-    msg.textContent = "";
-    await iniciarHome();
+    if (res.sucesso) {
+      userLogado = res.user;
+      msg.textContent = "";
+      await iniciarHome();
+    } else {
+      msg.textContent = res.msg || "Dados incorretos.";
+    }
+  } catch (err) {
+    console.error("Erro de conexão detalhado:", err);
+    msg.textContent = "Servidor offline ou erro de rede.";
+  } finally {
     showLoading(false);
   }
 }
-
 async function fazerCadastro() {
   const data = {
     action: "registrar",
