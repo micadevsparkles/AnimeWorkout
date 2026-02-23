@@ -1,61 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anime Workout</title>
+  <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjqAsDzWK5BVq2CpKFdvZng4oIdWzefn8wBw&s">
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
-  <div id="loading" class="loading hidden">
-    <div class="loading-retro-container">
-      <p class="loading-text">SINCRONIZANDO KI...</p>
-      <div class="loading-bar"><div class="loading-fill"></div></div>
-    </div>
-  </div>
 
-  <section id="loginScreen" class="screen active">
-    <h1 class="title">⛩️ ANIME WORKOUT</h1>
+<div id="loading" class="loading hidden">
+  <div class="loading-retro-container">
+    <p class="loading-text">RECEBENDO KI...</p>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>
+</div>
+
+<section id="loginScreen" class="screen active">
+  <h1 class="title">⛩️ ANIME WORKOUT ⛩️</h1>
+  <div class="faixa">
     <input id="logUser" placeholder="Usuário">
     <input id="logSenha" type="password" placeholder="Senha">
     <button onclick="fazerLogin()">LOGIN</button>
     <p id="logMsg" class="msg"></p>
     <a onclick="trocarTela('registerScreen')" class="link">Ainda não tem conta? Crie uma!</a>
-  </section>
+  </div>
+</section>
 
-  <section id="registerScreen" class="screen">
-    <h2>Novo Guerreiro</h2>
-    <input id="cadUser" placeholder="Usuário (mín. 4 chars)" oninput="validarDisponibilidade(this.value)">
-    <p id="cadUserAviso" style="font-size:10px; margin:0;"></p>
+<section id="registerScreen" class="screen">
+  <h2>Criar Nova Conta</h2>
+  <div class="faixa">
+    <input id="cadUser" placeholder="Usuário (mín. 4 caracteres)" oninput="validarNomeUsuario()">
+    <p id="userAlert" style="font-size:11px; margin:0; color:#ef4444;"></p>
     <input id="cadSenha" type="password" placeholder="Senha">
-    <input id="cadPeso" type="number" placeholder="Peso (kg)">
-    <input id="cadAltura" type="number" placeholder="Altura (ex: 1.75)" step="0.01">
-    <input id="cadIdade" type="number" placeholder="Idade">
+    <input id="cadPeso" placeholder="Peso (kg)" type="number">
+    <input id="cadAltura" placeholder="Altura (cm)" type="number">
+    <input id="cadIdade" placeholder="Idade" type="number">
     <select id="cadGenero">
       <option value="">Gênero</option>
-      <option>Masculino</option><option>Feminino</option>
+      <option>Masculino</option>
+      <option>Feminino</option>
+      <option>Outro</option>
     </select>
-    <button id="btnCadastrar" onclick="fazerCadastro()">Criar Conta</button>
-    <a onclick="trocarTela('loginScreen')" class="link">Voltar</a>
-  </section>
+    <select id="cadObjetivo">
+      <option value="">Objetivo</option>
+      <option>Emagrecer</option>
+      <option>Aumentar força</option>
+      <option>Aumentar massa muscular</option>
+    </select>
+    <button id="btnCriarConta" onclick="fazerCadastro()">Criar Conta</button>
+    <p id="cadMsg" class="msg"></p>
+    <a onclick="trocarTela('loginScreen')" class="link">Voltar para Login</a>
+  </div>
+</section>
 
-  <section id="homeScreen" class="screen">
-    <div class="header">
-      <div id="avatarHome" class="avatar" onclick="abrirPerfil()"></div>
-      <h2>Anime Workout</h2>
+<section id="homeScreen" class="screen">
+  <header class="header">
+    <h2>Dashboard</h2>
+    <div id="avatarHome" class="avatar" onclick="abrirPerfil()"></div>
+  </header>
+  <div class="faixa">
+    <h3>🔥 Missão do Dia</h3>
+    <div id="boxMissao" class="lista-treinos"></div>
+  </div>
+  <div class="faixa">
+    <h3>🥋 Indicações do Sensei</h3>
+    <div id="boxPadroes" class="lista-treinos"></div>
+  </div>
+  <div class="faixa">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+       <h3>⚡ Treinamento Solo</h3>
+       <button class="btn-plus" onclick="abrirCriacaoTreino()">+</button>
     </div>
-    <div class="faixa">
-      <h3>🥋 Indicações do Sensei</h3>
-      <div id="boxPadroes"></div>
-    </div>
-    <div class="faixa">
-      <h3>⚡ Meus Treinos</h3>
-      <button class="btn-novo" onclick="abrirCriacaoTreino()">+</button>
-      <div id="boxMeusTreinos"></div>
-    </div>
-  </section>
+    <div id="boxMeusTreinos" class="lista-treinos"></div>
+  </div>
+</section>
 
-  <section id="perfilScreen" class="screen">
-    <button onclick="trocarTela('homeScreen')">Voltar</button>
-    <div id="perfilAvatarBox" class="perfil-avatar"></div>
-    <button onclick="abrirModalAvatar()">Editar Avatar</button>
-    <div id="dadosUser">
-      </div>
-    <div id="calcIMC" class="faixa"></div>
-  </section>
+<section id="perfilScreen" class="screen">
+  <header class="header">
+    <button onclick="iniciarHome()" class="btn-back">⬅</button>
+    <h2>Minha Conta</h2>
+  </header>
+  <div class="faixa" style="text-align:center;">
+    <div style="position:relative; display:inline-block;">
+      <div id="perfilAvatarBox" class="perfil-avatar"></div>
+      <button class="edit-icon-btn" onclick="abrirModalAvatar()">✏️</button>
+    </div>
+    <div class="ofensiva-box">🔥 <span id="perfilOfensiva">0</span> Dias</div>
+  </div>
 
-  <div id="modalContainer"></div>
-  <script src="script.js"></script>
+  <div class="faixa">
+    <h3>📊 Status</h3>
+    <p id="perfilRankStr" style="color:#fb923c; font-weight:bold;"></p>
+    <div class="rpg-bar-container">
+      <div id="barXP" class="rpg-bar-fill bar-xp"></div>
+      <div id="txtXP" class="rpg-bar-text"></div>
+    </div>
+    <p id="perfilLevelStr" style="margin-top:10px; color:#c084fc;"></p>
+    <div class="rpg-bar-container">
+      <div id="barAura" class="rpg-bar-fill bar-aura"></div>
+      <div id="txtAura" class="rpg-bar-text"></div>
+    </div>
+  </div>
+
+  <div class="faixa">
+    <h3>⚖️ Saúde (IMC)</h3>
+    <p id="imcResultado" style="font-size:18px; font-weight:bold;"></p>
+    <p id="pesoIdeal" style="font-size:14px; color:#94a3b8;"></p>
+  </div>
+
+  <div class="faixa">
+    <h3>⚙️ Editar Dados</h3>
+    <input id="editUser" disabled style="opacity:0.6">
+    <input id="editSenha" type="password" placeholder="Senha">
+    <div class="grid-inputs">
+      <input id="editPeso" type="number" placeholder="Peso (kg)">
+      <input id="editAltura" type="number" placeholder="Altura (cm)">
+    </div>
+    <select id="editGenero"><option>Masculino</option><option>Feminino</option><option>Outro</option></select>
+    <select id="editObjetivo"><option>Emagrecer</option><option>Aumentar força</option><option>Aumentar massa muscular</option></select>
+    <input id="editRival" placeholder="Nome do Rival">
+    <button onclick="salvarPerfil()">Atualizar Dados</button>
+  </div>
+</section>
+
+<div id="modalContainer"></div>
+<script src="script.js"></script>
 </body>
+</html>
