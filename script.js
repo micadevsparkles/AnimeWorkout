@@ -115,20 +115,26 @@ async function fazerLogin() {
   if (!user || !senha) return msg.textContent = "Preencha tudo!";
   
   showLoading(true);
+  let res;
+  
+  // Isola a chamada da API para capturar APENAS erros reais de internet/servidor
   try {
-    const res = await apiCall({ action: "login", usuario: user, senha: senha });
-    if (!res.sucesso) {
-      msg.textContent = res.msg;
-      showLoading(false);
-    } else {
-      userLogado = res.user;
-      msg.textContent = "";
-      await iniciarHome();
-      showLoading(false);
-    }
+    res = await apiCall({ action: "login", usuario: user, senha: senha });
   } catch (err) {
-    console.error(err);
-    msg.textContent = "Erro de conexão.";
+    console.error("Erro real de conexão:", err);
+    msg.textContent = "Erro de conexão com o servidor.";
+    showLoading(false);
+    return;
+  }
+
+  // Se passou da API, processamos as telas sem cair no Try Catch
+  if (!res.sucesso) {
+    msg.textContent = res.msg;
+    showLoading(false);
+  } else {
+    userLogado = res.user;
+    msg.textContent = "";
+    await iniciarHome();
     showLoading(false);
   }
 }
@@ -167,10 +173,13 @@ async function iniciarHome() {
   trocarTela("homeScreen");
   
   const avatar = document.getElementById("avatarHome");
-  if (userLogado.Icone) {
-    avatar.innerHTML = `<img src="${userLogado.Icone}">`;
-  } else {
-    avatar.innerHTML = userLogado.Usuario.charAt(0).toUpperCase();
+  // Adicionamos proteção: só tenta colocar ícone se o elemento existir no seu HTML
+  if (avatar && userLogado) {
+    if (userLogado.Icone) {
+      avatar.innerHTML = `<img src="${userLogado.Icone}">`;
+    } else {
+      avatar.innerHTML = userLogado.Usuario.charAt(0).toUpperCase();
+    }
   }
 
   showLoading(true);
@@ -186,6 +195,9 @@ async function iniciarHome() {
 
 function renderizarTreinos(containerId, lista) {
   const container = document.getElementById(containerId);
+  // Proteção extra caso o containerId não exista no HTML
+  if (!container) return;
+
   if (!lista || lista.length === 0) {
     container.innerHTML = "<p>Nenhum treinamento encontrado.</p>";
     return;
