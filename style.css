@@ -1,147 +1,52 @@
-* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-body { margin: 0; background: #0f172a; color: #f8fafc; }
+/* PALETA: Preto e Azul Escuro */
+:root {
+  --background: #020617;
+  --surface: #0f172a;
+  --primary: #1e40af; /* Azul Escuro */
+  --accent: #3b82f6;  /* Azul Brilhante */
+  --text: #f8fafc;
+}
 
-/* TELAS */
-.screen { display: none; padding: 20px; max-width: 500px; margin: 0 auto; }
+body { background: var(--background); color: var(--text); font-family: sans-serif; margin: 0; }
+.screen { display: none; padding: 20px; max-width: 480px; margin: 0 auto; }
 .screen.active { display: block; }
 
-/* TIPOGRAFIA E CORES */
-.title { text-align: center; color: #fb923c; }
-.msg { text-align: center; color: #fb7185; font-size: 14px; margin-top: 10px; }
-.msg.sucesso { color: #34d399; }
-.link { display: block; text-align: center; margin-top: 15px; color: #38bdf8; cursor: pointer; text-decoration: underline; }
+.faixa { background: var(--surface); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #1e293b; }
+input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; }
+button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+button:disabled { background: #334155; cursor: not-allowed; }
 
-/* INPUTS E BOTOES */
-input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; }
-button { width: 100%; padding: 14px; background: linear-gradient(90deg, #f97316, #ea580c); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
-button:active { transform: scale(0.98); }
-.btn-novo { background: transparent; border: 2px dashed #f97316; color: #f97316; margin-bottom: 15px; }
+/* AVATAR CIRCULAR PERFEITO */
+.avatar, .perfil-avatar {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--primary); display: flex; align-items: center; justify-content: center;
+  overflow: hidden; border: 2px solid var(--accent);
+}
+.perfil-avatar { width: 120px; height: 120px; font-size: 40px; }
+.avatar img, .perfil-avatar img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center;
+}
 
-/* HOME COMPONENTS */
-.header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px; }
-.avatar { width: 50px; height: 50px; border-radius: 50%; background: #f97316; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; cursor: pointer; overflow: hidden; }
-.avatar img { width: 100%; height: 100%; object-fit: cover; }
-.faixa { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-.faixa h3 { margin-top: 0; color: #fb923c; border-bottom: 1px solid #334155; padding-bottom: 8px; }
+.edit-icon-btn { position: absolute; bottom: 0; right: 0; width: 35px; height: 35px; border-radius: 50%; padding: 0; }
+.btn-plus { width: 40px; height: 40px; border-radius: 50%; padding: 0; font-size: 24px; }
 
-/* CARDS DE TREINO */
-.card-treino { background: #334155; padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border-left: 4px solid #f97316; }
-.card-treino h4 { margin: 0 0 5px 0; }
-.card-treino p { margin: 0; font-size: 12px; color: #94a3b8; }
+/* PROGRESS BARS */
+.rpg-bar-container { background: #000; height: 20px; border-radius: 10px; overflow: hidden; position: relative; }
+.rpg-bar-fill { height: 100%; transition: 0.5s; }
+.bar-xp { background: var(--accent); }
+.bar-aura { background: #a855f7; }
+.rpg-bar-text { position: absolute; width: 100%; text-align: center; font-size: 11px; line-height: 20px; font-weight: bold; }
 
-/* MODAL */
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
-.modal-box { background: #1e293b; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
-.modal-box h2 { margin-top: 0; color: #fb923c; }
+/* CARDS */
+.card-treino { background: #1e293b; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 4px solid var(--accent); }
 
-/* LISTA EXERCICIOS CRIACAO */
-.lista-ex-container { max-height: 200px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-.lista-ex-container label { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+/* PLAYER */
+.player-gif { width: 100%; border-radius: 10px; margin: 15px 0; background: white; }
+.timer-display { font-size: 50px; font-weight: bold; color: var(--accent); margin: 20px 0; }
 
-/* MODO EVOLUCAO (PLAYER) */
-.player-gif { width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px; margin-bottom: 15px; }
-.timer-display { font-size: 48px; text-align: center; font-weight: bold; color: #38bdf8; margin: 20px 0; }
-.player-controls { display: flex; gap: 10px; }
+.avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; }
+.avatar-opt { width: 100%; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; cursor: pointer; }
 
 /* LOADING */
-.loading { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-.hidden { display: none !important; }
-.spinner { width: 50px; height: 50px; border: 5px solid #334155; border-top: 5px solid #f97316; border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* ================= TEMA RPG ================= */
-.rpg-bar-container { background: #1e293b; border: 2px solid #334155; border-radius: 8px; height: 20px; width: 100%; position: relative; overflow: hidden; margin-top: 5px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
-.rpg-bar-fill { height: 100%; transition: width 0.5s ease; }
-.bar-xp { background: linear-gradient(90deg, #10b981, #34d399); } /* Verde para XP */
-.bar-aura { background: linear-gradient(90deg, #8b5cf6, #c084fc); } /* Roxo para Aura/Mana */
-.rpg-bar-text { position: absolute; width: 100%; text-align: center; top: 0; left: 0; font-size: 12px; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; line-height: 20px; }
-
-.perfil-avatar { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto; border: 3px solid #f97316; box-shadow: 0 0 15px #f97316; display: flex; align-items: center; justify-content: center; font-size: 40px; overflow: hidden; }
-.perfil-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.btn-edit-avatar { display: block; margin: 10px auto; background: transparent; border: 1px solid #f97316; color: #f97316; padding: 5px 15px; border-radius: 20px; font-size: 12px; }
-
-.ofensiva-box { text-align: center; margin: 15px 0; font-size: 24px; color: #facc15; text-shadow: 0 0 10px #ea580c; font-weight: bold; }
-.conquista-badge { display: inline-block; background: #334155; border-left: 3px solid #fb923c; padding: 5px 10px; border-radius: 4px; font-size: 12px; margin: 5px; color: #f8fafc; }
-
-.rival-box { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px dashed #ef4444; }
-.grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-/* Adicione ao final do seu style.css */
-.card-treino {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  transition: transform 0.2s;
-}
-.card-treino:hover {
-  transform: translateX(5px);
-}
-
-.loading-retro-container { width: 80%; text-align: center; }
-.loading-text { 
-  font-family: 'Courier New', Courier, monospace; 
-  color: #fb923c; 
-  text-shadow: 2px 2px #000;
-  letter-spacing: 3px;
-  animation: blink 0.8s infinite;
-}
-.loading-bar { 
-  border: 4px solid #f8fafc; 
-  padding: 4px; 
-  background: #000;
-  box-shadow: 0 0 15px #f97316;
-}
-.loading-fill { 
-  height: 20px; 
-  background: #f97316; 
-  width: 0%; 
-  animation: fillBar 2s infinite ease-in-out;
-}
-@keyframes fillBar { 0% { width: 0%; } 50% { width: 100%; } 100% { width: 0%; } }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-.smoke-out {
-  animation: ninjaSmoke 0.6s forwards;
-  pointer-events: none;
-}
-
-@keyframes ninjaSmoke {
-  0% { transform: scale(1); filter: blur(0); opacity: 1; }
-  30% { transform: scale(1.1); filter: blur(5px); opacity: 0.8; background: #94a3b8; }
-  100% { transform: scale(1.5); filter: blur(20px); opacity: 0; }
-}
-
-.level-up-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, rgba(0,0,0,0) 70%);
-}
-
-.level-up-text {
-    font-size: 60px;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 20px #fb923c, 0 0 40px #f97316;
-    animation: levelUpPop 1.5s ease-out forwards;
-    font-family: 'Arial Black', sans-serif;
-}
-
-@keyframes levelUpPop {
-    0% { transform: scale(0.5); opacity: 0; }
-    20% { transform: scale(1.2); opacity: 1; }
-    80% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(1.1); opacity: 0; filter: blur(10px); }
-}
-
-#particleCanvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9998;
-}
+.loading { position: fixed; inset: 0; background: var(--background); z-index: 100; display: flex; justify-content: center; align-items: center; }
+.hidden { display: none; }
