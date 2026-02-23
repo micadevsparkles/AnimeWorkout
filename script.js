@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyvAmwVmYkPzltLw8z9sLaikVAFOvbulx-JKDM7Oz0Gc_ok-5VbgOu5Z_1yrmolcev3/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzcH9BKFNHaw5Sjv3JejWKJBYHoSqx92d2uQghiitxTC5EFO7c-nxEOZWuSkeWMJkyi/exec";
 
 // --- SISTEMA DE AUDIO (CORRIGIDO PARA LINKS DIRETOS) ---
 const sons = {};
