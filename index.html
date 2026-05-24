@@ -1,135 +1,51 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anime Workout</title>
-  <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjqAsDzWK5BVq2CpKFdvZng4oIdWzefn8wBw&s">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Testador de Sprite Sheet</title>
+    <style>
+        body {
+            background-color: #0f0a14; /* Fundo escuro para contrastar o cristal */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            color: white;
+            flex-direction: column;
+        }
+
+        h2 { margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        /* A MÁGICA ACONTECE AQUI */
+        .janela-cristal {
+            width: 256px;   /* Largura exata de um único frame */
+            height: 256px;  /* Altura exata de um único frame */
+            
+            /* SUBSTITUA PELO NOME DO SEU ARQUIVO SE FOR DIFERENTE: */
+            background-image: url('cristal_player.png'); 
+            
+            background-repeat: no-repeat;
+            background-position: 0px 0px;
+            
+            /* Aplica a animação: dura 0.8s, tem 8 passos exatos e roda para sempre */
+            animation: girar 0.8s steps(8) infinite;
+            
+            image-rendering: pixelated; /* Mantém as bordas nítidas na web */
+        }
+
+        /* Move a folha inteira para a esquerda, frame por frame */
+        @keyframes girar {
+            from { background-position: 0px 0px; }
+            to { background-position: -2048px 0px; } /* 256px * 8 frames */
+        }
+    </style>
 </head>
 <body>
 
-<div id="loading" class="loading hidden">
-  <div class="magic-sphere-container">
-    <div class="particle p-blue" style="top: 10%; left: 20%; animation-delay: 0.1s;"></div>
-    <div class="particle p-yellow" style="top: 80%; left: 70%; animation-delay: 0.3s;"></div>
-    <div class="particle p-blue" style="top: 50%; left: 90%; animation-delay: 0.5s;"></div>
-    <div class="particle p-yellow" style="top: 20%; left: 80%; animation-delay: 0.2s;"></div>
-    <div class="particle p-blue" style="top: 70%; left: 10%; animation-delay: 0.4s;"></div>
-    <div class="magic-sphere"></div>
-    <p class="loading-text">ABSORVENDO KI...</p>
-  </div>
-</div>
+    <h2>Visualização do Cristal Mágico</h2>
+    <div class="janela-cristal"></div>
 
-<section id="loginScreen" class="screen active">
-  <h1 class="title">⛩️ ANIME WORKOUT ⛩️</h1>
-  <div class="faixa">
-    <input id="logUser" placeholder="Usuário">
-    <input id="logSenha" type="password" placeholder="Senha">
-    <button onclick="fazerLogin()">LOGIN</button>
-    <p id="logMsg" class="msg"></p>
-    <a onclick="trocarTela('registerScreen')" class="link">Ainda não tem conta? Crie uma!</a>
-  </div>
-</section>
-
-<section id="registerScreen" class="screen">
-  <h2>Criar Nova Conta</h2>
-  <div class="faixa">
-    <input id="cadUser" placeholder="Usuário (mín. 4 caracteres)" oninput="validarNomeUsuario()">
-    <p id="userAlert" style="font-size:11px; margin:0; color:#ef4444;"></p>
-    <input id="cadSenha" type="password" placeholder="Senha">
-    <input id="cadPeso" placeholder="Peso (kg)" type="number">
-    <input id="cadAltura" placeholder="Altura (cm)" type="number">
-    <input id="cadIdade" placeholder="Idade" type="number">
-    <select id="cadGenero">
-      <option value="">Gênero</option>
-      <option>Masculino</option>
-      <option>Feminino</option>
-      <option>Outro</option>
-    </select>
-    <select id="cadObjetivo">
-      <option value="">Objetivo</option>
-      <option>Emagrecer</option>
-      <option>Aumentar força</option>
-      <option>Aumentar massa muscular</option>
-    </select>
-    <button id="btnCriarConta" onclick="fazerCadastro()">Criar Conta</button>
-    <p id="cadMsg" class="msg"></p>
-    <a onclick="trocarTela('loginScreen')" class="link">Voltar para Login</a>
-  </div>
-</section>
-
-<section id="homeScreen" class="screen">
-  <header class="header">
-    <h2>Dashboard</h2>
-    <div id="avatarHome" class="avatar" onclick="abrirPerfil()"></div>
-  </header>
-  <div class="faixa">
-    <h3>🔥 Missão do Dia</h3>
-    <div id="boxMissao" class="lista-treinos"></div>
-  </div>
-  <div class="faixa">
-    <h3>🥋 Indicações do Sensei</h3>
-    <div id="boxPadroes" class="lista-treinos"></div>
-  </div>
-  <div class="faixa">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-       <h3>⚡ Treinamento Solo</h3>
-       <button class="btn-plus" onclick="abrirCriacaoTreino()">+</button>
-    </div>
-    <div id="boxMeusTreinos" class="lista-treinos"></div>
-  </div>
-</section>
-
-<section id="perfilScreen" class="screen">
-  <header class="header">
-    <button onclick="iniciarHome()" class="btn-back">⬅</button>
-    <h2>Minha Conta</h2>
-  </header>
-  <div class="faixa" style="text-align:center;">
-    <div style="position:relative; display:inline-block;">
-      <div id="perfilAvatarBox" class="perfil-avatar"></div>
-      <button class="edit-icon-btn" onclick="abrirModalAvatar()">✏️</button>
-    </div>
-    <div class="ofensiva-box">🔥 <span id="perfilOfensiva">0</span> Dias</div>
-  </div>
-
-  <div class="faixa">
-    <h3>📊 Status</h3>
-    <p id="perfilRankStr" style="color:#fb923c; font-weight:bold; font-size:18px;"></p>
-    <div class="rpg-bar-container">
-      <div id="barXP" class="rpg-bar-fill bar-xp"></div>
-      <div id="txtXP" class="rpg-bar-text"></div>
-    </div>
-    <p id="perfilLevelStr" style="margin-top:10px; color:#c084fc; font-weight:bold;"></p>
-    <div class="rpg-bar-container">
-      <div id="barAura" class="rpg-bar-fill bar-aura"></div>
-      <div id="txtAura" class="rpg-bar-text"></div>
-    </div>
-  </div>
-
-  <div class="faixa">
-    <h3>⚖️ Saúde (IMC)</h3>
-    <p id="imcResultado" style="font-size:18px; font-weight:bold;"></p>
-    <p id="pesoIdeal" style="font-size:14px; color:#94a3b8;"></p>
-  </div>
-
-  <div class="faixa">
-    <h3>⚙️ Editar Dados</h3>
-    <input id="editUser" disabled style="opacity:0.6">
-    <input id="editSenha" type="password" placeholder="Nova Senha (opcional)">
-    <div class="grid-inputs">
-      <input id="editPeso" type="number" placeholder="Peso (kg)">
-      <input id="editAltura" type="number" placeholder="Altura (cm)">
-    </div>
-    <select id="editGenero"><option>Masculino</option><option>Feminino</option><option>Outro</option></select>
-    <select id="editObjetivo"><option>Emagrecer</option><option>Aumentar força</option><option>Aumentar massa muscular</option></select>
-    <input id="editRival" placeholder="Nome do Rival">
-    <button onclick="salvarPerfil()">Atualizar Dados</button>
-  </div>
-</section>
-
-<div id="modalContainer"></div>
-<script src="script.js"></script>
 </body>
 </html>
